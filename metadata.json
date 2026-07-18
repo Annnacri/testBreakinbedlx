@@ -1,0 +1,6 @@
+{
+  "name": "Café da manhã na cama LX",
+  "description": "Premium gourmet breakfast delivery and luxury concierge service for boutique accommodations and tourists in Lisbon.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

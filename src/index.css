@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Playfair Display", serif;
+  --font-sans: "Plus Jakarta Sans", sans-serif;
+
+  --color-gold-50: #FAF6E8;
+  --color-gold-100: #F3ECBD;
+  --color-gold-500: #D4AF37;
+  --color-gold-600: #C59D3F;
+  --color-gold-700: #A6812F;
+  --color-gold-800: #876523;
+  --color-gold-900: #684C18;
+
+  --color-cream: #FDFCFB;
+  --color-bege: #FCFAF6;
+  --color-bege-dark: #FAF4E9;
+  --color-espresso: #2C1E1A;
+  --color-espresso-light: #4A3E3B;
+}
+
+/* Custom scrollbars for high-end boutique feel */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #EBE3D5;
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #C59D3F;
+}
