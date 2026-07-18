@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 
 import { Product, CartItem, Coupon, Order, ClientProfile, ReservationDetails } from './types';
-import { LANGUAGES, TRANSLATIONS, PROMOTION_CARDS, FAQS, DELIVERY_ZONES } from './data';
+import { LANGUAGES, TRANSLATIONS, FAQS, DELIVERY_ZONES } from './data';
 
 import ProductModal from './components/ProductModal';
 import ReserveCheckout from './components/ReserveCheckout';
@@ -546,48 +546,6 @@ export default function App() {
               </div>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* PROMOTIONS SLIDER GRID */}
-      <section className="bg-bege border-t border-b border-bege-dark py-16">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="text-center space-y-2 mb-10">
-            <h2 className="font-serif text-xl font-medium tracking-tight text-espresso">
-              {getT('promotions')}
-            </h2>
-            <p className="text-[11px] text-stone-400">Ofertas limitadas baseadas no horário de reserva</p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {PROMOTION_CARDS.map((p) => (
-              <div key={p.id} className="rounded-2xl border border-bege-dark bg-white p-6 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
-                <div>
-                  <span className="rounded-full bg-gold-50 px-2.5 py-0.5 text-[9px] font-semibold text-gold-800 tracking-widest uppercase">
-                    {p.badge[lang] || p.badge['pt']}
-                  </span>
-                  <h3 className="mt-3.5 font-sans text-sm font-semibold text-espresso">
-                    {p.title[lang] || p.title['pt']}
-                  </h3>
-                  <p className="mt-1.5 text-xs text-stone-600 leading-relaxed">
-                    {p.description[lang] || p.description['pt']}
-                  </p>
-                </div>
-                <div className="mt-5 pt-4 border-t border-stone-100 flex items-center justify-between">
-                  <span className="font-mono text-xs font-semibold text-stone-400">CÓDIGO: {p.tag}</span>
-                  <button
-                    onClick={() => {
-                      handleApplyCoupon(p.tag);
-                      alert(`Cupão ${p.tag} copiado e pronto para aplicar no checkout!`);
-                    }}
-                    className="text-xs font-semibold text-gold-600 hover:text-gold-800 transition-colors"
-                  >
-                    Ativar Oferta →
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
