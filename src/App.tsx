@@ -218,8 +218,8 @@ export default function App() {
   };
 
   // Complete Checkout Handler
-  const handleCompleteCheckout = async (reservation: ReservationDetails, paymentMethod: string) => {
-    const emailToUse = currentClient?.email || 'anon-tourist@breakfastinbedlx.com';
+  const handleCompleteCheckout = async (reservation: ReservationDetails, paymentMethod: string, guestEmail?: string) => {
+    const emailToUse = guestEmail || currentClient?.email || 'anon-tourist@breakfastinbedlx.com';
     
     try {
       const response = await fetch('/api/orders', {
@@ -1057,6 +1057,7 @@ export default function App() {
             total={total}
             currentLanguage={lang}
             clientEmail={currentClient?.email || 'anon-tourist@breakfastinbedlx.com'}
+            clientName={currentClient?.name || ''}
             onApplyCoupon={handleApplyCoupon}
             onRemoveCoupon={() => setAppliedCoupon(null)}
             onCompleteCheckout={handleCompleteCheckout}

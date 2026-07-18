@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Calendar as CalendarIcon, Clock, MapPin, Building, CreditCard, 
-  HelpCircle, ShieldCheck, CheckCircle, Loader2, AlertCircle, Sparkles, X 
+  HelpCircle, ShieldCheck, CheckCircle, Loader2, AlertCircle, Sparkles, X,
+  Smartphone, ExternalLink
 } from 'lucide-react';
 import { ReservationDetails, CartItem, Coupon } from '../types';
 import { AVAILABLE_HOURS, DELIVERY_ZONES } from '../data';
@@ -16,9 +17,10 @@ interface ReserveCheckoutProps {
   total: number;
   currentLanguage: string;
   clientEmail: string;
+  clientName: string;
   onApplyCoupon: (code: string) => Promise<boolean>;
   onRemoveCoupon: () => void;
-  onCompleteCheckout: (reservation: ReservationDetails, paymentMethod: string) => Promise<void>;
+  onCompleteCheckout: (reservation: ReservationDetails, paymentMethod: string, guestEmail?: string) => Promise<void>;
   onClose: () => void;
 }
 
@@ -31,16 +33,39 @@ export default function ReserveCheckout({
   total,
   currentLanguage,
   clientEmail,
+  clientName,
   onApplyCoupon,
   onRemoveCoupon,
   onCompleteCheckout,
   onClose,
 }: ReserveCheckoutProps) {
+  const isPartner = clientEmail !== 'anon-tourist@breakfastinbedlx.com' && (
+    clientName.toLowerCase().includes('travel') ||
+    clientName.toLowerCase().includes('adventure') ||
+    clientName.toLowerCase().includes('hotel') ||
+    clientName.toLowerCase().includes('agency') ||
+    clientName.toLowerCase().includes('host') ||
+    clientName.toLowerCase().includes('apart') ||
+    clientName.toLowerCase().includes('stay') ||
+    clientEmail.toLowerCase().includes('travel') ||
+    clientEmail.toLowerCase().includes('partner') ||
+    clientEmail.toLowerCase().includes('host')
+  );
+
   const [step, setStep] = useState<1 | 2>(1);
   const [couponInput, setCouponInput] = useState('');
   const [couponError, setCouponError] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [paidTotal, setPaidTotal] = useState<number | null>(null);
+
+  // Payment simulation state
+  const [paymentSimulationState, setPaymentSimulationState] = useState<'idle' | 'waiting_mbway' | 'processing_card' | 'redirecting_paypal' | 'done'>('idle');
+  const [mbwayTimer, setMbwayTimer] = useState(10);
+  const [mbwayPhone, setMbwayPhone] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [cardCvc, setCardCvc] = useState('');
   
   // Form details
   const [date, setDate] = useState('');
@@ -48,9 +73,28 @@ export default function ReserveCheckout({
   const [address, setAddress] = useState('');
   const [postalCode, setPostalCode] = useState('');
   const [accType, setAccType] = useState<ReservationDetails['type']>('airbnb');
-  const [accommodationName, setAccommodationName] = useState('');
+  const [accommodationName, setAccommodationName] = useState(isPartner ? clientName : '');
   const [roomNumber, setRoomNumber] = useState('');
   const [notes, setNotes] = useState('');
+  
+  // Guest customer contact details
+  const [guestEmail, setGuestEmail] = useState(isPartner ? '' : (clientEmail === 'anon-tourist@breakfastinbedlx.com' ? '' : clientEmail));
+  const [guestName, setGuestName] = useState(isPartner ? '' : (clientName || ''));
+
+  useEffect(() => {
+    if (isPartner) {
+      setAccommodationName(clientName);
+      setGuestEmail('');
+      setGuestName('');
+    } else {
+      if (clientEmail && clientEmail !== 'anon-tourist@breakfastinbedlx.com') {
+        setGuestEmail(clientEmail);
+      }
+      if (clientName) {
+        setGuestName(clientName);
+      }
+    }
+  }, [clientEmail, clientName, isPartner]);
   
   // Validation messages
   const [zipWarning, setZipWarning] = useState('');
@@ -132,9 +176,29 @@ export default function ReserveCheckout({
       return;
     }
 
+    if (paymentMethod === 'mbway' && !mbwayPhone.trim()) {
+      alert(
+        currentLanguage === 'pt'
+          ? 'Por favor introduza o seu número de telemóvel para o pagamento MB WAY.'
+          : 'Please enter your phone number for the MB WAY payment.'
+      );
+      return;
+    }
+
+    if (paymentMethod === 'stripe') {
+      if (!cardNumber.trim() || !cardExpiry.trim() || !cardCvc.trim()) {
+        alert(
+          currentLanguage === 'pt'
+            ? 'Por favor preencha todos os dados do cartão de crédito.'
+            : 'Please fill in all credit card details.'
+        );
+        return;
+      }
+    }
+
+    setPaidTotal(total);
     setIsProcessing(true);
     
-    // Prepare reservation payload
     const reservation: ReservationDetails = {
       date,
       time,
@@ -146,16 +210,80 @@ export default function ReserveCheckout({
       notes,
     };
 
-    try {
-      await onCompleteCheckout(reservation, paymentMethod);
-      setIsProcessing(false);
-      setIsSuccess(true);
-    } catch (e) {
-      console.error(e);
-      setIsProcessing(false);
-      alert('Erro ao processar reserva. Por favor tente novamente.');
+    const finalizeAndSaveOrder = async () => {
+      try {
+        await onCompleteCheckout(reservation, paymentMethod, guestEmail);
+        setIsProcessing(false);
+        setIsSuccess(true);
+        setPaymentSimulationState('done');
+      } catch (e) {
+        console.error(e);
+        setIsProcessing(false);
+        setPaymentSimulationState('idle');
+        alert('Erro ao processar reserva. Por favor tente novamente.');
+      }
+    };
+
+    if (paymentMethod === 'mbway') {
+      setPaymentSimulationState('waiting_mbway');
+      setMbwayTimer(10);
+    } else if (paymentMethod === 'stripe') {
+      setPaymentSimulationState('processing_card');
+      setTimeout(() => {
+        finalizeAndSaveOrder();
+      }, 3000);
+    } else if (paymentMethod === 'applepay' || paymentMethod === 'googlepay' || paymentMethod === 'paypal') {
+      setPaymentSimulationState('redirecting_paypal');
+      setTimeout(() => {
+        finalizeAndSaveOrder();
+      }, 3000);
+    } else {
+      // Multibanco reference or default
+      await finalizeAndSaveOrder();
     }
   };
+
+  // MB Way countdown timer
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (paymentSimulationState === 'waiting_mbway' && mbwayTimer > 0) {
+      interval = setInterval(() => {
+        setMbwayTimer((prev) => {
+          if (prev <= 1) {
+            clearInterval(interval);
+            const reservation: ReservationDetails = {
+              date,
+              time,
+              address,
+              postalCode,
+              type: accType,
+              accommodationName,
+              roomNumber,
+              notes,
+            };
+            setPaidTotal(total);
+            onCompleteCheckout(reservation, paymentMethod, guestEmail)
+              .then(() => {
+                setIsProcessing(false);
+                setIsSuccess(true);
+                setPaymentSimulationState('done');
+              })
+              .catch((e) => {
+                console.error(e);
+                setIsProcessing(false);
+                setPaymentSimulationState('idle');
+                alert('Erro ao processar reserva. Por favor tente novamente.');
+              });
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [paymentSimulationState, mbwayTimer, date, time, address, postalCode, accType, accommodationName, roomNumber, notes, paymentMethod, guestEmail, onCompleteCheckout]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/40 p-4 backdrop-blur-md overflow-y-auto">
@@ -185,12 +313,174 @@ export default function ReserveCheckout({
                 </div>
               </div>
 
-              {step === 1 ? (
+              {paymentSimulationState !== 'idle' && paymentSimulationState !== 'done' ? (
+                /* Beautiful Payment Simulation View */
+                <div className="space-y-6 py-8 flex flex-col items-center justify-center text-center">
+                  {paymentSimulationState === 'waiting_mbway' && (
+                    <div className="space-y-6 max-w-sm w-full">
+                      <div className="relative mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-rose-50 text-rose-600 animate-pulse">
+                        <Smartphone size={40} className="text-rose-500" />
+                        <span className="absolute inset-0 rounded-full border-2 border-rose-500 animate-ping opacity-25"></span>
+                      </div>
+                      
+                      <div className="space-y-2 px-4">
+                        <h3 className="font-sans text-sm font-semibold text-stone-900">
+                          {currentLanguage === 'pt' ? 'A aguardar autorização MB WAY...' : 'Waiting for MB WAY authorization...'}
+                        </h3>
+                        <p className="text-xs text-stone-500 leading-relaxed">
+                          {currentLanguage === 'pt'
+                            ? `Enviámos um pedido de autorização de ${total.toFixed(2)}€ para a sua aplicação MB WAY (${mbwayPhone}). Confirme a transação para concluir.`
+                            : `We sent a payment request of ${total.toFixed(2)}€ to your MB WAY app (${mbwayPhone}). Please authorize the transaction to complete.`}
+                        </p>
+                      </div>
+
+                      {/* Progress Bar & Countdown */}
+                      <div className="space-y-2 w-full px-8">
+                        <div className="h-2 w-full bg-stone-100 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-rose-500 transition-all duration-1000 ease-linear"
+                            style={{ width: `${(mbwayTimer / 10) * 100}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-[10px] font-mono text-stone-400">
+                          {currentLanguage === 'pt' ? `Expira em ${mbwayTimer} segundos` : `Expires in ${mbwayTimer} seconds`}
+                        </p>
+                      </div>
+
+                      {/* Speed up simulator action */}
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setPaidTotal(total);
+                          setIsProcessing(true);
+                          try {
+                            const reservation: ReservationDetails = {
+                              date,
+                              time,
+                              address,
+                              postalCode,
+                              type: accType,
+                              accommodationName,
+                              roomNumber,
+                              notes,
+                            };
+                            await onCompleteCheckout(reservation, paymentMethod, guestEmail);
+                            setIsProcessing(false);
+                            setIsSuccess(true);
+                            setPaymentSimulationState('done');
+                          } catch (e) {
+                            console.error(e);
+                            setIsProcessing(false);
+                            setPaymentSimulationState('idle');
+                            alert('Erro ao simular aprovação.');
+                          }
+                        }}
+                        className="rounded-xl border border-rose-200 bg-white px-4 py-2 text-[11px] font-semibold text-rose-700 hover:bg-rose-50 cursor-pointer shadow-sm transition-colors"
+                      >
+                        {currentLanguage === 'pt' ? 'Aprovar Pagamento Manualmente' : 'Approve Payment Manually'}
+                      </button>
+                    </div>
+                  )}
+
+                  {paymentSimulationState === 'processing_card' && (
+                    <div className="space-y-6 max-w-sm w-full">
+                      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gold-50 text-gold-700">
+                        <Loader2 size={40} className="animate-spin text-gold-600" />
+                      </div>
+                      
+                      <div className="space-y-2 px-4">
+                        <h3 className="font-sans text-sm font-semibold text-stone-900">
+                          {currentLanguage === 'pt' ? 'A processar pagamento...' : 'Processing payment...'}
+                        </h3>
+                        <p className="text-xs text-stone-500 leading-relaxed">
+                          {currentLanguage === 'pt'
+                            ? 'A comunicar de forma segura com os servidores do Stripe para validar o cartão de crédito e processar o pagamento com encriptação AES-256 de nível bancário.'
+                            : 'Communicating securely with Stripe servers to validate credit card and process payment with bank-grade AES-256 encryption.'}
+                        </p>
+                      </div>
+                      <div className="flex justify-center items-center gap-2 text-[10px] text-stone-400">
+                        <ShieldCheck size={14} className="text-emerald-600" />
+                        <span>PCI-DSS Compliant • Connection Encrypted</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {paymentSimulationState === 'redirecting_paypal' && (
+                    <div className="space-y-6 max-w-sm w-full">
+                      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                        <Loader2 size={40} className="animate-spin text-blue-500" />
+                      </div>
+                      
+                      <div className="space-y-2 px-4">
+                        <h3 className="font-sans text-sm font-semibold text-stone-900">
+                          {currentLanguage === 'pt' 
+                            ? `A redirecionar...` 
+                            : `Redirecting...`}
+                        </h3>
+                        <p className="text-xs text-stone-500 leading-relaxed">
+                          {currentLanguage === 'pt'
+                            ? `A estabelecer ligação segura com ${paymentMethod === 'paypal' ? 'PayPal' : paymentMethod === 'applepay' ? 'Apple Pay' : 'Google Pay'}. Por favor não feche esta página.`
+                            : `Establishing secure connection with ${paymentMethod === 'paypal' ? 'PayPal' : paymentMethod === 'applepay' ? 'Apple Pay' : 'Google Pay'}. Please do not close this page.`}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : step === 1 ? (
                 /* Step 1: Delivery Details & Date */
                 <div className="space-y-5">
                   <h3 className="font-sans text-xs font-semibold uppercase tracking-widest text-gold-700">
-                    1. {currentLanguage === 'pt' ? 'Quando e onde entregar?' : 'When & where to deliver?'}
+                    1. {currentLanguage === 'pt' ? 'Quem é o hóspede e quando entregar?' : 'Who is the guest & when to deliver?'}
                   </h3>
+
+                  {isPartner && (
+                    <div className="rounded-xl bg-gold-50/40 p-3.5 border border-gold-100 flex gap-2.5">
+                      <span className="text-base">💡</span>
+                      <p className="text-[10px] text-stone-700 leading-normal font-sans">
+                        {currentLanguage === 'pt' ? (
+                          <>
+                            <strong>Área de Parceiros:</strong> Por favor, introduza o <strong>Nome do Hóspede</strong> e o <strong>E-mail do Hóspede</strong> para quem está a encomendar. O nome do seu alojamento (<strong>{clientName}</strong>) foi preenchido automaticamente abaixo.
+                          </>
+                        ) : (
+                          <>
+                            <strong>Partner Area:</strong> Please enter the <strong>Guest Name</strong> and <strong>Guest E-mail</strong> of the person you are ordering for. Your accommodation name (<strong>{clientName}</strong>) has been prefilled automatically below.
+                          </>
+                        )}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Guest Contact Details */}
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 bg-stone-50/50 p-4 rounded-2xl border border-stone-100">
+                    <div>
+                      <label className="block text-[10px] font-bold text-stone-500 uppercase">
+                        {currentLanguage === 'pt' ? 'Nome do Hóspede *' : 'Guest Name *'}
+                      </label>
+                      <input
+                        id="checkout-guest-name"
+                        type="text"
+                        required
+                        placeholder={currentLanguage === 'pt' ? 'EX: Ana Esteves' : 'EX: Ana Esteves'}
+                        value={guestName}
+                        onChange={(e) => setGuestName(e.target.value)}
+                        className="mt-1.5 w-full rounded-xl border border-stone-200 bg-white py-2 px-3.5 text-xs text-stone-800 focus:border-gold-500 focus:outline-none focus:ring-1 focus:ring-gold-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-stone-500 uppercase">
+                        {currentLanguage === 'pt' ? 'E-mail do Hóspede *' : 'Guest E-mail *'}
+                      </label>
+                      <input
+                        id="checkout-guest-email"
+                        type="email"
+                        required
+                        placeholder="EX: anaesteves@gmail.com"
+                        value={guestEmail}
+                        onChange={(e) => setGuestEmail(e.target.value)}
+                        className="mt-1.5 w-full rounded-xl border border-stone-200 bg-white py-2 px-3.5 text-xs text-stone-800 focus:border-gold-500 focus:outline-none focus:ring-1 focus:ring-gold-500"
+                      />
+                    </div>
+                  </div>
 
                   {/* Hour Rule notice if active */}
                   {blockedTodayWarning && (
@@ -376,7 +666,7 @@ export default function ReserveCheckout({
                     <button
                       id="checkout-continue-btn"
                       type="button"
-                      disabled={!date || !time || !address || !postalCode || !accommodationName}
+                      disabled={!date || !time || !address || !postalCode || !accommodationName || !guestName.trim() || !guestEmail.trim() || !guestEmail.includes('@')}
                       onClick={() => setStep(2)}
                       className="w-full rounded-xl bg-espresso py-3 text-xs font-semibold text-white hover:bg-gold-700 disabled:bg-stone-100 disabled:text-stone-300 transition-colors focus:outline-none cursor-pointer"
                     >
@@ -427,6 +717,8 @@ export default function ReserveCheckout({
                         <input
                           type="tel"
                           required
+                          value={mbwayPhone}
+                          onChange={(e) => setMbwayPhone(e.target.value)}
                           placeholder="+351 9xx xxx xxx"
                           className="mt-1.5 w-full rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-xs focus:border-gold-500 focus:outline-none"
                         />
@@ -442,6 +734,8 @@ export default function ReserveCheckout({
                           <input
                             type="text"
                             required
+                            value={cardNumber}
+                            onChange={(e) => setCardNumber(e.target.value)}
                             placeholder="xxxx xxxx xxxx xxxx"
                             className="mt-1.5 w-full rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-xs focus:border-gold-500 focus:outline-none"
                           />
@@ -451,6 +745,8 @@ export default function ReserveCheckout({
                             <label className="block text-[10px] font-bold text-stone-500 uppercase">Validade</label>
                             <input
                               type="text"
+                              value={cardExpiry}
+                              onChange={(e) => setCardExpiry(e.target.value)}
                               placeholder="MM/AA"
                               className="mt-1.5 w-full rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-xs focus:border-gold-500 focus:outline-none"
                             />
@@ -459,6 +755,8 @@ export default function ReserveCheckout({
                             <label className="block text-[10px] font-bold text-stone-500 uppercase">CVC</label>
                             <input
                               type="text"
+                              value={cardCvc}
+                              onChange={(e) => setCardCvc(e.target.value)}
                               placeholder="123"
                               className="mt-1.5 w-full rounded-xl border border-stone-200 bg-white px-3.5 py-2 text-xs focus:border-gold-500 focus:outline-none"
                             />
@@ -637,15 +935,90 @@ export default function ReserveCheckout({
 
             <div className="rounded-2xl border border-stone-100 p-4 text-left space-y-2 bg-stone-50">
               <p className="text-[11px] text-stone-500">
+                <strong>{currentLanguage === 'pt' ? 'Nome:' : 'Name:'}</strong> {guestName}
+              </p>
+              <p className="text-[11px] text-stone-500">
                 <strong>{currentLanguage === 'pt' ? 'Endereço:' : 'Address:'}</strong> {address}
               </p>
               <p className="text-[11px] text-stone-500">
                 <strong>{currentLanguage === 'pt' ? 'Alojamento:' : 'Accommodation:'}</strong> {accommodationName} {roomNumber ? `(Quarto ${roomNumber})` : ''}
               </p>
               <p className="text-[11px] text-stone-500">
-                <strong>Email:</strong> {clientEmail}
+                <strong>Email:</strong> {guestEmail}
               </p>
             </div>
+
+            {/* Payment Method Receipt Details */}
+            {paymentMethod === 'multibanco' && (
+              <div className="rounded-2xl border border-stone-200 bg-white p-4 space-y-3 shadow-sm font-sans text-left">
+                <div className="flex items-center justify-between border-b border-stone-100 pb-2 mb-2">
+                  <div className="bg-[#1D5E9B] text-white font-black px-2 py-0.5 text-[9px] rounded tracking-wider">MULTIBANCO</div>
+                  <span className="text-[9px] text-stone-500 font-bold uppercase">
+                    {currentLanguage === 'pt' ? 'PAGAMENTO DE SERVIÇOS' : 'PAYMENT OF SERVICES'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 gap-y-1.5 text-xs text-stone-700">
+                  <span className="text-stone-400">{currentLanguage === 'pt' ? 'Entidade:' : 'Entity:'}</span>
+                  <span className="font-mono font-bold text-right">21898</span>
+                  <span className="text-stone-400">{currentLanguage === 'pt' ? 'Referência:' : 'Reference:'}</span>
+                  <span className="font-mono font-bold text-right text-espresso tracking-wider">483 920 182</span>
+                  <span className="text-stone-400">{currentLanguage === 'pt' ? 'Montante:' : 'Amount:'}</span>
+                  <span className="font-mono font-bold text-right text-espresso">{(paidTotal !== null ? paidTotal : total).toFixed(2)}€</span>
+                </div>
+                <p className="text-[9px] text-stone-400 text-center pt-2 border-t border-stone-100/60 leading-normal">
+                  {currentLanguage === 'pt'
+                    ? 'Por favor efetue o pagamento no prazo de 2 horas num ATM ou Homebanking para confirmar a sua reserva.'
+                    : 'Please complete payment within 2 hours at any ATM or via Homebanking to confirm your booking.'}
+                </p>
+              </div>
+            )}
+
+            {paymentMethod === 'mbway' && (
+              <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4 space-y-1.5 text-left">
+                <div className="flex items-center gap-2 border-b border-emerald-100/40 pb-2 mb-1.5">
+                  <div className="bg-[#E41B53] text-white font-bold px-1.5 py-0.5 text-[8px] rounded tracking-wider">MB WAY</div>
+                  <span className="text-[9px] text-emerald-800 font-bold uppercase">
+                    {currentLanguage === 'pt' ? 'APROVADO COM SUCESSO' : 'SUCCESSFULLY APPROVED'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-emerald-700 leading-normal">
+                  {currentLanguage === 'pt'
+                    ? `Transação autorizada com sucesso no número ${mbwayPhone}. O valor de ${(paidTotal !== null ? paidTotal : total).toFixed(2)}€ foi debitado de forma segura.`
+                    : `Transaction successfully authorized on phone ${mbwayPhone}. The amount of ${(paidTotal !== null ? paidTotal : total).toFixed(2)}€ was securely debited.`}
+                </p>
+              </div>
+            )}
+
+            {paymentMethod === 'stripe' && (
+              <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4 space-y-1.5 text-left">
+                <div className="flex items-center gap-2 border-b border-emerald-100/40 pb-2 mb-1.5">
+                  <div className="bg-espresso text-white font-semibold px-1.5 py-0.5 text-[8px] rounded tracking-wider">CARD</div>
+                  <span className="text-[9px] text-emerald-800 font-bold uppercase">
+                    {currentLanguage === 'pt' ? 'PAGAMENTO PROCESSADO' : 'PAYMENT PROCESSED'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-emerald-700 leading-normal">
+                  {currentLanguage === 'pt'
+                    ? `O seu cartão terminado em **** ${cardNumber.slice(-4) || '4242'} foi debitado com sucesso em ${(paidTotal !== null ? paidTotal : total).toFixed(2)}€ através do Stripe.`
+                    : `Your card ending in **** ${cardNumber.slice(-4) || '4242'} was successfully charged ${(paidTotal !== null ? paidTotal : total).toFixed(2)}€ via Stripe.`}
+                </p>
+              </div>
+            )}
+
+            {(paymentMethod === 'applepay' || paymentMethod === 'googlepay' || paymentMethod === 'paypal') && (
+              <div className="rounded-2xl border border-emerald-100 bg-emerald-50/40 p-4 space-y-1.5 text-left">
+                <div className="flex items-center gap-2 border-b border-emerald-100/40 pb-2 mb-1.5">
+                  <span className="text-[9px] text-emerald-800 font-bold uppercase">
+                    {currentLanguage === 'pt' ? 'PAGAMENTO DIGITAL AUTORIZADO' : 'DIGITAL PAYMENT AUTHORIZED'}
+                  </span>
+                </div>
+                <p className="text-[11px] text-emerald-700 leading-normal">
+                  {currentLanguage === 'pt'
+                    ? `Autenticação bem-sucedida! O valor de ${(paidTotal !== null ? paidTotal : total).toFixed(2)}€ foi cobrado de forma 100% segura.`
+                    : `Authentication successful! The amount of ${(paidTotal !== null ? paidTotal : total).toFixed(2)}€ was charged 100% securely.`}
+                </p>
+              </div>
+            )}
 
             <button
               id="success-close-btn"
