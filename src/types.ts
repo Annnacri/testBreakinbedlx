@@ -73,6 +73,16 @@ export interface ClientProfile {
   favorites: string[]; // product IDs
 }
 
+export interface Review {
+  id: string;
+  productId: string;
+  clientEmail: string;
+  clientName: string;
+  rating: number; // 1 to 5
+  text: string;
+  createdAt: string;
+}
+
 export interface DashboardStats {
   salesCount: number;
   revenue: number;

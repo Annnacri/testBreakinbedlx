@@ -186,6 +186,14 @@ export const TRANSLATIONS: { [key: string]: { [lang: string]: string } } = {
     de: 'Kundenkonto',
     it: 'Area Clienti',
   },
+  orderDeadlineNotice: {
+    pt: 'As encomendas para o dia seguinte devem ser feitas até às 23:00.',
+    en: 'Orders for the next day must be placed by 11:00 PM.',
+    es: 'Los pedidos para el día siguiente deben realizarse antes de las 23:00.',
+    fr: 'Les commandes pour le lendemain doivent être passées avant 23h00.',
+    de: 'Bestellungen für den nächsten Tag müssen bis 23:00 Uhr aufgegeben werden.',
+    it: 'Gli ordini per il giorno successivo devono essere effettuati entro le 23:00.',
+  },
 };
 
 export const PRODUCTS: Product[] = [
@@ -685,7 +693,7 @@ export const DELIVERY_ZONES = [
 ];
 
 export const AVAILABLE_HOURS = [
-  '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00'
+  '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30'
 ];
 
 export const FAQS = [

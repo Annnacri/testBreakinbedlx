@@ -4,7 +4,7 @@ import fs from "fs";
 import dotenv from "dotenv";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
-import { Product, Order, ClientProfile, Coupon } from "./src/types";
+import { Product, Order, ClientProfile, Coupon, Review } from "./src/types";
 
 dotenv.config();
 
@@ -295,6 +295,27 @@ const DEFAULT_CLIENTS: ClientProfile[] = [
   }
 ];
 
+const DEFAULT_REVIEWS: Review[] = [
+  {
+    id: 'rev-1',
+    productId: 'menu-vitamin-c',
+    clientEmail: 'anaestevesac@gmail.com',
+    clientName: 'Ana Esteves',
+    rating: 5,
+    text: 'O sumo de laranja é divinal e a torta de laranja é super fofa! Adorei tudo.',
+    createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  },
+  {
+    id: 'rev-2',
+    productId: 'menu-portuguese',
+    clientEmail: 'tourist-lisbon@example.com',
+    clientName: 'John Doe',
+    rating: 4,
+    text: 'Traditional and yummy. The pastel de nata was still crispy when it arrived!',
+    createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
+  }
+];
+
 // Helper to read database
 function readDB() {
   if (!fs.existsSync(dbPath)) {
@@ -302,21 +323,28 @@ function readDB() {
       products: DEFAULT_PRODUCTS,
       orders: DEFAULT_ORDERS,
       clients: DEFAULT_CLIENTS,
-      coupons: DEFAULT_COUPONS
+      coupons: DEFAULT_COUPONS,
+      reviews: DEFAULT_REVIEWS
     };
     fs.writeFileSync(dbPath, JSON.stringify(initialData, null, 2));
     return initialData;
   }
   try {
     const raw = fs.readFileSync(dbPath, "utf-8");
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (!parsed.reviews) {
+      parsed.reviews = DEFAULT_REVIEWS;
+      fs.writeFileSync(dbPath, JSON.stringify(parsed, null, 2));
+    }
+    return parsed;
   } catch (error) {
     console.error("Error reading db file, regenerating defaults", error);
     return {
       products: DEFAULT_PRODUCTS,
       orders: DEFAULT_ORDERS,
       clients: DEFAULT_CLIENTS,
-      coupons: DEFAULT_COUPONS
+      coupons: DEFAULT_COUPONS,
+      reviews: DEFAULT_REVIEWS
     };
   }
 }
@@ -478,6 +506,60 @@ app.delete("/api/coupons/:code", (req, res) => {
   db.coupons = db.coupons.filter((c: Coupon) => c.code.toUpperCase() !== req.params.code.toUpperCase());
   writeDB(db);
   res.json({ success: true });
+});
+
+// GET reviews
+app.get("/api/reviews", (req, res) => {
+  const db = readDB();
+  res.json(db.reviews || []);
+});
+
+// POST review
+app.post("/api/reviews", (req, res) => {
+  const db = readDB();
+  const { productId, clientEmail, clientName, rating, text } = req.body;
+
+  if (!productId || !clientEmail || !rating || !text) {
+    return res.status(400).json({ error: "Missing required fields: productId, clientEmail, rating, and text are required." });
+  }
+
+  if (rating < 1 || rating > 5) {
+    return res.status(400).json({ error: "Rating must be between 1 and 5." });
+  }
+
+  // Verify that the user has ordered this product
+  const userHasOrdered = db.orders.some((order: Order) => 
+    order.clientEmail.toLowerCase() === clientEmail.toLowerCase() &&
+    order.items.some((item) => item.productId === productId)
+  );
+
+  if (!userHasOrdered) {
+    return res.status(403).json({ 
+      error: "Para avaliar este produto, é necessário que já o tenha encomendado anteriormente." 
+    });
+  }
+
+  // Check if they already reviewed this product to avoid duplicates, or just allow updating/appending
+  // Let's replace any existing review by the same user on the same product, or just append.
+  // Replacing is cleaner and prevents spam!
+  db.reviews = (db.reviews || []).filter((r: Review) => 
+    !(r.productId === productId && r.clientEmail.toLowerCase() === clientEmail.toLowerCase())
+  );
+
+  const newReview: Review = {
+    id: `rev-${Date.now()}`,
+    productId,
+    clientEmail: clientEmail.toLowerCase(),
+    clientName: clientName || clientEmail.split('@')[0],
+    rating: Number(rating),
+    text: text.trim().slice(0, 500), // cap to 500 characters
+    createdAt: new Date().toISOString()
+  };
+
+  db.reviews.push(newReview);
+  writeDB(db);
+
+  res.status(201).json({ success: true, review: newReview });
 });
 
 // POST chatbot endpoint utilizing Gemini AI with context

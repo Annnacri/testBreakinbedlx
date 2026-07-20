@@ -3,16 +3,187 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   ShoppingBag, Heart, Search, Menu, X, ArrowRight, CheckCircle, 
   MapPin, Clock, Phone, Mail, Award, Sparkles, Sliders, ChevronRight, 
-  User, ShieldCheck, HeartCrack, HelpCircle, Star
+  User, ShieldCheck, HeartCrack, HelpCircle, Star, Printer
 } from 'lucide-react';
 
-import { Product, CartItem, Coupon, Order, ClientProfile, ReservationDetails } from './types';
+import { Product, CartItem, Coupon, Order, ClientProfile, ReservationDetails, Review } from './types';
 import { LANGUAGES, TRANSLATIONS, FAQS, DELIVERY_ZONES } from './data';
 
 import ProductModal from './components/ProductModal';
 import ReserveCheckout from './components/ReserveCheckout';
 import AdminPanel from './components/AdminPanel';
 import Chatbot from './components/Chatbot';
+
+const receiptTranslations: { [key: string]: { [lang: string]: string } } = {
+  receiptTitle: {
+    pt: 'Recibo de Encomenda',
+    en: 'Order Receipt',
+    es: 'Recibo de Pedido',
+    fr: 'Reçu de Commande',
+    de: 'Bestellbestätigung',
+    it: 'Ricevuta d\'Ordine'
+  },
+  companyName: {
+    pt: 'Breakfast in Bed Lisboa',
+    en: 'Breakfast in Bed Lisboa',
+    es: 'Breakfast in Bed Lisboa',
+    fr: 'Breakfast in Bed Lisboa',
+    de: 'Breakfast in Bed Lisboa',
+    it: 'Breakfast in Bed Lisboa'
+  },
+  orderDate: {
+    pt: 'Data do Pedido',
+    en: 'Order Date',
+    es: 'Fecha del Pedido',
+    fr: 'Date de Commande',
+    de: 'Bestelldatum',
+    it: 'Data dell\'Ordine'
+  },
+  deliverOn: {
+    pt: 'Data de Entrega',
+    en: 'Delivery Date',
+    es: 'Fecha de Entrega',
+    fr: 'Date de Livraison',
+    de: 'Lieferdatum',
+    it: 'Data di Consegna'
+  },
+  reservation: {
+    pt: 'Reserva',
+    en: 'Reservation',
+    es: 'Reserva',
+    fr: 'Réservation',
+    de: 'Reservierung',
+    it: 'Prenotazione'
+  },
+  client: {
+    pt: 'Cliente',
+    en: 'Client',
+    es: 'Cliente',
+    fr: 'Client',
+    de: 'Kunde',
+    it: 'Cliente'
+  },
+  deliveryAddress: {
+    pt: 'Endereço de Entrega',
+    en: 'Delivery Address',
+    es: 'Dirección de Entrega',
+    fr: 'Adresse de Livraison',
+    de: 'Lieferadresse',
+    it: 'Indirizzo di Consegna'
+  },
+  accommodation: {
+    pt: 'Alojamento',
+    en: 'Accommodation',
+    es: 'Alojamiento',
+    fr: 'Hébergement',
+    de: 'Unterkunft',
+    it: 'Alloggio'
+  },
+  room: {
+    pt: 'Quarto',
+    en: 'Room',
+    es: 'Habitación',
+    fr: 'Chambre',
+    de: 'Zimmer',
+    it: 'Camera'
+  },
+  notes: {
+    pt: 'Notas',
+    en: 'Notes',
+    es: 'Notas',
+    fr: 'Notes',
+    de: 'Notizen',
+    it: 'Note'
+  },
+  item: {
+    pt: 'Artigo',
+    en: 'Item',
+    es: 'Artículo',
+    fr: 'Article',
+    de: 'Artikel',
+    it: 'Articolo'
+  },
+  quantity: {
+    pt: 'Qtd',
+    en: 'Qty',
+    es: 'Cant',
+    fr: 'Qté',
+    de: 'Menge',
+    it: 'Qtà'
+  },
+  unitPrice: {
+    pt: 'Preço Unit.',
+    en: 'Unit Price',
+    es: 'Precio Unit.',
+    fr: 'Prix Unit.',
+    de: 'Einzelpreis',
+    it: 'Prezzo Unit.'
+  },
+  total: {
+    pt: 'Total',
+    en: 'Total',
+    es: 'Total',
+    fr: 'Total',
+    de: 'Gesamt',
+    it: 'Totale'
+  },
+  subtotal: {
+    pt: 'Subtotal',
+    en: 'Subtotal',
+    es: 'Subtotal',
+    fr: 'Sous-total',
+    de: 'Zwischensumme',
+    it: 'Subtotale'
+  },
+  deliveryFee: {
+    pt: 'Taxa de Entrega',
+    en: 'Delivery Fee',
+    es: 'Tarifa de Envío',
+    fr: 'Frais de Livraison',
+    de: 'Liefergebühr',
+    it: 'Spese di Spedizione'
+  },
+  discount: {
+    pt: 'Desconto',
+    en: 'Discount',
+    es: 'Descuento',
+    fr: 'Remise',
+    de: 'Rabatt',
+    it: 'Sconto'
+  },
+  paymentMethod: {
+    pt: 'Método de Pagamento',
+    en: 'Payment Method',
+    es: 'Método de Pago',
+    fr: 'Moyen de Paiement',
+    de: 'Zahlungsart',
+    it: 'Metodo di Pagamento'
+  },
+  paymentStatus: {
+    pt: 'Estado do Pagamento',
+    en: 'Payment Status',
+    es: 'Estado del Pago',
+    fr: 'Statut du Paiement',
+    de: 'Zahlungsstatus',
+    it: 'Stato del Pagamento'
+  },
+  paid: {
+    pt: 'Confirmado / Pago',
+    en: 'Confirmed / Paid',
+    es: 'Confirmado / Pagado',
+    fr: 'Confirmé / Payé',
+    de: 'Bestätigt / Bezahlt',
+    it: 'Confermato / Pagato'
+  },
+  greeting: {
+    pt: 'Obrigado por escolher o Breakfast in Bed Lisboa! Bom apetite!',
+    en: 'Thank you for choosing Breakfast in Bed Lisboa! Enjoy your breakfast!',
+    es: '¡Gracias por elegir Breakfast in Bed Lisboa! ¡Buen provecho!',
+    fr: 'Merci d’avoir choisi Breakfast in Bed Lisboa! Bon appétit !',
+    de: 'Vielen Dank, dass Sie sich für Breakfast in Bed Lisboa entschieden haben! Guten Appetit!',
+    it: 'Grazie per aver scelto Breakfast in Bed Lisboa! Buon appetito!'
+  }
+};
 
 export default function App() {
   // Locale State
@@ -23,6 +194,7 @@ export default function App() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [clients, setClients] = useState<ClientProfile[]>([]);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
   
   // UI Controls
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -50,19 +222,50 @@ export default function App() {
   // Load Initial API Data
   const fetchApiData = async () => {
     try {
-      const [resProd, resOrd, resCli, resCoup] = await Promise.all([
+      const [resProd, resOrd, resCli, resCoup, resRev] = await Promise.all([
         fetch('/api/products'),
         fetch('/api/orders'),
         fetch('/api/clients'),
-        fetch('/api/coupons')
+        fetch('/api/coupons'),
+        fetch('/api/reviews')
       ]);
 
       if (resProd.ok) setProducts(await resProd.json());
       if (resOrd.ok) setOrders(await resOrd.json());
       if (resCli.ok) setClients(await resCli.json());
       if (resCoup.ok) setCoupons(await resCoup.json());
+      if (resRev.ok) setReviews(await resRev.json());
     } catch (e) {
       console.error("Failed to load API data, falling back to local simulation", e);
+    }
+  };
+
+  const handleAddReview = async (productId: string, rating: number, text: string): Promise<{ success: boolean; error?: string }> => {
+    if (!currentClient) return { success: false, error: lang === 'pt' ? 'Inicie sessão para deixar uma avaliação.' : 'Please sign in to leave a review.' };
+    try {
+      const response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId,
+          clientEmail: currentClient.email,
+          clientName: currentClient.name,
+          rating,
+          text
+        })
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        const resRev = await fetch('/api/reviews');
+        if (resRev.ok) setReviews(await resRev.json());
+        return { success: true };
+      } else {
+        return { success: false, error: data.error };
+      }
+    } catch (e) {
+      console.error("Failed to add review", e);
+      return { success: false, error: lang === 'pt' ? 'Ocorreu um erro ao enviar a avaliação.' : 'An error occurred while submitting the review.' };
     }
   };
 
@@ -204,6 +407,302 @@ export default function App() {
   const handleLogout = () => {
     setCurrentClient(null);
     localStorage.removeItem('lx_client');
+  };
+
+  const handlePrintOrder = (order: Order) => {
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.width = '0px';
+    iframe.style.height = '0px';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document || iframe.contentDocument;
+    if (!doc) return;
+
+    const t = (key: string) => {
+      return receiptTranslations[key]?.[lang] || receiptTranslations[key]?.['en'] || '';
+    };
+
+    const formattedDate = new Date(order.createdAt).toLocaleDateString(lang === 'pt' ? 'pt-PT' : 'en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+
+    const itemsHtml = order.items.map(item => `
+      <tr>
+        <td style="padding: 12px 16px; border-bottom: 1px solid #f5f5f4; text-align: left; font-size: 13px;">
+          <div style="font-weight: 600; color: #443c35;">${item.name}</div>
+        </td>
+        <td style="padding: 12px 16px; border-bottom: 1px solid #f5f5f4; text-align: center; font-size: 13px; color: #57534e;">
+          ${item.quantity}
+        </td>
+        <td style="padding: 12px 16px; border-bottom: 1px solid #f5f5f4; text-align: right; font-size: 13px; color: #57534e;">
+          ${item.price.toFixed(2)}€
+        </td>
+        <td style="padding: 12px 16px; border-bottom: 1px solid #f5f5f4; text-align: right; font-weight: 600; font-size: 13px; color: #443c35;">
+          ${(item.price * item.quantity).toFixed(2)}€
+        </td>
+      </tr>
+    `).join('');
+
+    const paymentMethodMap: { [key: string]: string } = {
+      mbway: 'MB WAY',
+      multibanco: 'Multibanco',
+      card: 'Stripe',
+      paypal: 'PayPal'
+    };
+    const paymentMethodLabel = paymentMethodMap[order.paymentMethod] || order.paymentMethod.toUpperCase();
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>${t('receiptTitle')} - #${order.id.slice(-6).toUpperCase()}</title>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+          body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: #1c1917;
+            margin: 0;
+            padding: 30px;
+            line-height: 1.5;
+            background: #fff;
+          }
+          .receipt-container {
+            max-width: 700px;
+            margin: 0 auto;
+            border: 1px solid #e7e5e4;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+          }
+          .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid #f5f5f4;
+            padding-bottom: 24px;
+            margin-bottom: 28px;
+          }
+          .brand h1 {
+            margin: 0 0 6px 0;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #443c35;
+          }
+          .brand p {
+            margin: 0;
+            font-size: 11px;
+            color: #78716c;
+          }
+          .meta-info {
+            text-align: right;
+          }
+          .meta-info h2 {
+            margin: 0 0 8px 0;
+            font-size: 15px;
+            font-weight: 700;
+            color: #b45309;
+            letter-spacing: 0.05em;
+          }
+          .meta-info p {
+            margin: 3px 0;
+            font-size: 11px;
+            color: #78716c;
+          }
+          .grid-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 28px;
+          }
+          .info-block {
+            background-color: #fafaf9;
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #f5f5f4;
+          }
+          .info-block h3 {
+            margin: 0 0 8px 0;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #78716c;
+            border-bottom: 1px solid #e7e5e4;
+            padding-bottom: 4px;
+          }
+          .info-block p {
+            margin: 4px 0;
+            font-size: 12px;
+            color: #443c35;
+            line-height: 1.4;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 28px;
+          }
+          th {
+            text-align: left;
+            padding: 10px 16px;
+            background-color: #fafaf9;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #78716c;
+            border-bottom: 1px solid #e7e5e4;
+          }
+          .totals-table {
+            width: 280px;
+            margin-left: auto;
+            margin-bottom: 32px;
+          }
+          .totals-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 12px;
+            color: #57534e;
+          }
+          .totals-row.grand-total {
+            border-top: 2px solid #e7e5e4;
+            padding-top: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            color: #443c35;
+          }
+          .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            background-color: #d1fae5;
+            color: #065f46;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            border-radius: 9999px;
+            letter-spacing: 0.05em;
+          }
+          .footer {
+            border-top: 1px dashed #e7e5e4;
+            padding-top: 24px;
+            text-align: center;
+            font-size: 11px;
+            color: #78716c;
+          }
+          @media print {
+            body {
+              padding: 0;
+            }
+            .receipt-container {
+              border: none;
+              box-shadow: none;
+              padding: 0;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="receipt-container">
+          <div class="header">
+            <div class="brand">
+              <h1>Breakfast in Bed</h1>
+              <p>Lisboa, Portugal</p>
+              <p>info@breakfastinbedlx.com | www.breakfastinbedlx.com</p>
+            </div>
+            <div class="meta-info">
+              <h2>${t('receiptTitle').toUpperCase()}</h2>
+              <p><strong>${t('reservation')}:</strong> #${order.id.slice(-6).toUpperCase()}</p>
+              <p><strong>${t('orderDate')}:</strong> ${formattedDate}</p>
+            </div>
+          </div>
+
+          <div class="grid-info">
+            <div class="info-block">
+              <h3>${t('client')}</h3>
+              <p><strong>${currentClient?.name}</strong></p>
+              <p>${currentClient?.email}</p>
+              <p>${currentClient?.phone}</p>
+            </div>
+            <div class="info-block">
+              <h3>${t('deliveryAddress')}</h3>
+              <p><strong>${t('deliverOn')}:</strong> ${order.reservation.date} às ${order.reservation.time}</p>
+              <p><strong>${t('accommodation')}:</strong> ${order.reservation.accommodationName} ${order.reservation.roomNumber ? `(Quarto ${order.reservation.roomNumber})` : ''}</p>
+              <p>${order.reservation.address}, ${order.reservation.postalCode}</p>
+              ${order.reservation.notes ? `<p style="font-style: italic; font-size: 11px; color: #78716c; margin-top: 6px;"><strong>${t('notes')}:</strong> "${order.reservation.notes}"</p>` : ''}
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="text-align: left; padding: 10px 16px;">${t('item')}</th>
+                <th style="text-align: center; width: 60px; padding: 10px 16px;">${t('quantity')}</th>
+                <th style="text-align: right; width: 100px; padding: 10px 16px;">${t('unitPrice')}</th>
+                <th style="text-align: right; width: 100px; padding: 10px 16px;">${t('total')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+
+          <div class="totals-table">
+            <div class="totals-row">
+              <span>${t('subtotal')}</span>
+              <span>${order.subtotal.toFixed(2)}€</span>
+            </div>
+            <div class="totals-row">
+              <span>${t('deliveryFee')}</span>
+              <span>${order.deliveryFee.toFixed(2)}€</span>
+            </div>
+            ${order.discount > 0 ? `
+              <div class="totals-row" style="color: #b45309;">
+                <span>${t('discount')}</span>
+                <span>-${order.discount.toFixed(2)}€</span>
+              </div>
+            ` : ''}
+            <div class="totals-row grand-total">
+              <span>${t('total')}</span>
+              <span>${order.total.toFixed(2)}€</span>
+            </div>
+            <div class="totals-row" style="margin-top: 12px; align-items: center;">
+              <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: #78716c;">${t('paymentMethod')}</span>
+              <span style="font-size: 11px; font-weight: 600; color: #443c35;">${paymentMethodLabel}</span>
+            </div>
+            <div class="totals-row" style="align-items: center;">
+              <span style="font-size: 10px; font-weight: 600; text-transform: uppercase; color: #78716c;">${t('paymentStatus')}</span>
+              <span class="badge">${t('paid')}</span>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p>${t('greeting')}</p>
+            <p style="font-size: 9px; color: #a8a29e; margin-top: 16px;">© 2026 Breakfast in Bed Lisboa. All rights reserved.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    doc.open();
+    doc.write(htmlContent);
+    doc.close();
+
+    iframe.contentWindow?.focus();
+    setTimeout(() => {
+      iframe.contentWindow?.print();
+      setTimeout(() => {
+        document.body.removeChild(iframe);
+      }, 1000);
+    }, 500);
   };
 
   // Apply Coupon Handler
@@ -385,6 +884,15 @@ export default function App() {
       <div className="bg-espresso py-2.5 text-center text-[10px] font-medium tracking-widest text-gold-100 uppercase flex items-center justify-center gap-2 border-b border-gold-900/10">
         <Sparkles size={11} className="text-gold-500 animate-pulse" />
         <span>Lisboa Gourmet Delivery • Silent & Discrete Mornings</span>
+      </div>
+
+      {/* ORDER DEADLINE NOTICE BAR */}
+      <div className="bg-gold-50/90 border-b border-gold-200/60 py-2 px-4 text-center text-xs text-gold-950 font-medium flex items-center justify-center gap-2">
+        <Clock size={13} className="text-gold-600 shrink-0 animate-pulse" />
+        <span>
+          <strong>{lang === 'pt' ? 'Nota Importante: ' : 'Important Note: '}</strong>
+          {getT('orderDeadlineNotice')}
+        </span>
       </div>
 
       {/* LUXURY NAVBAR */}
@@ -607,6 +1115,10 @@ export default function App() {
             const isFav = wishlist.includes(prod.id);
             const localizedName = prod.name[lang] || prod.name['pt'];
             const localizedDesc = prod.description[lang] || prod.description['pt'];
+            const prodReviews = reviews.filter(r => r.productId === prod.id);
+            const avgRating = prodReviews.length > 0 
+              ? (prodReviews.reduce((sum, r) => sum + r.rating, 0) / prodReviews.length).toFixed(1)
+              : null;
             
             return (
               <div 
@@ -652,6 +1164,13 @@ export default function App() {
                         {prod.price.toFixed(2)}€
                       </span>
                     </div>
+                    {avgRating && (
+                      <div className="mt-1 flex items-center gap-1 text-[10px] text-gold-600 font-bold">
+                        <Star size={10} className="fill-gold-500 text-gold-500" />
+                        <span>{avgRating}</span>
+                        <span className="text-stone-400 font-normal">({prodReviews.length})</span>
+                      </div>
+                    )}
                     <p className="mt-1.5 text-[11px] text-stone-500 leading-relaxed line-clamp-2">
                       {localizedDesc}
                     </p>
@@ -843,6 +1362,14 @@ export default function App() {
             isFavorite={wishlist.includes(selectedProduct.id)}
             relatedProducts={products.filter(p => p.id !== selectedProduct.id && p.category === (selectedProduct.category === 'menu' ? 'extra' : 'menu')).slice(0, 3)}
             onSelectProduct={(p) => setSelectedProduct(p)}
+            reviews={reviews}
+            currentClient={currentClient}
+            hasOrderedProduct={
+              currentClient 
+                ? orders.some(o => o.clientEmail.toLowerCase() === currentClient.email.toLowerCase() && o.items.some(item => item.productId === selectedProduct.id))
+                : false
+            }
+            onAddReview={handleAddReview}
           />
         )}
       </AnimatePresence>
@@ -1027,12 +1554,50 @@ export default function App() {
                         orders
                           .filter(o => o.clientEmail.toLowerCase() === currentClient.email.toLowerCase())
                           .map((o) => (
-                            <div key={o.id} className="rounded-xl border border-stone-100 p-2.5 flex justify-between items-center text-[11px] bg-white">
-                              <div>
-                                <p className="font-semibold text-stone-900">Reserva #{o.id.slice(-6).toUpperCase()}</p>
-                                <p className="text-stone-400">{o.reservation.date} às {o.reservation.time}</p>
+                            <div key={o.id} className="rounded-xl border border-stone-100 p-2.5 flex flex-col text-[11px] bg-white gap-2">
+                              <div className="flex justify-between items-center w-full">
+                                <div className="min-w-0 flex-1">
+                                  <p className="font-semibold text-stone-900">Reserva #{o.id.slice(-6).toUpperCase()}</p>
+                                  <p className="text-stone-400 truncate">{o.reservation.date} às {o.reservation.time}</p>
+                                </div>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  <button
+                                    onClick={() => handlePrintOrder(o)}
+                                    className="flex items-center gap-1 rounded-lg px-2 py-1 border border-stone-200 hover:border-gold-500 hover:bg-gold-50/40 text-[9px] font-medium text-stone-600 hover:text-gold-700 transition-all cursor-pointer shadow-sm"
+                                    title={lang === 'pt' ? 'Descarregar Recibo / Imprimir' : 'Download Receipt / Print'}
+                                  >
+                                    <Printer size={11} className="text-stone-500" />
+                                    <span>{lang === 'pt' ? 'Recibo' : 'Receipt'}</span>
+                                  </button>
+                                  <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] text-stone-600 uppercase font-medium">{o.status}</span>
+                                </div>
                               </div>
-                              <span className="rounded-full bg-stone-100 px-2 py-0.5 text-[10px] text-stone-600 uppercase font-medium">{o.status}</span>
+                              <div className="border-t border-stone-50/80 pt-1.5 mt-0.5">
+                                <p className="text-[9px] font-bold text-stone-400 uppercase tracking-wider mb-1">
+                                  {lang === 'pt' ? 'Avaliar Artigos:' : 'Review Items:'}
+                                </p>
+                                <div className="flex flex-wrap gap-1.5">
+                                  {o.items.map((item) => {
+                                    const targetProd = products.find(p => p.id === item.productId);
+                                    return (
+                                      <button
+                                        key={item.productId}
+                                        onClick={() => {
+                                          if (targetProd) {
+                                            setSelectedProduct(targetProd);
+                                            setShowClientModal(false);
+                                          }
+                                        }}
+                                        className="text-[9px] bg-stone-50 hover:bg-gold-50 hover:text-gold-700 text-stone-600 border border-stone-200/60 rounded-lg px-2 py-1 font-medium transition-colors cursor-pointer flex items-center gap-1 hover:border-gold-300"
+                                        title={lang === 'pt' ? `Avaliar ${item.name}` : `Review ${item.name}`}
+                                      >
+                                        <Star size={8} className="text-gold-500 fill-gold-500" />
+                                        <span>{item.name}</span>
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
                             </div>
                           ))
                       )}
