@@ -13,6 +13,7 @@ import ProductModal from './components/ProductModal';
 import ReserveCheckout from './components/ReserveCheckout';
 import AdminPanel from './components/AdminPanel';
 import Chatbot from './components/Chatbot';
+import DeliveryMap from './components/DeliveryMap';
 
 const receiptTranslations: { [key: string]: { [lang: string]: string } } = {
   receiptTitle: {
@@ -1201,12 +1202,12 @@ export default function App() {
       </section>
 
       {/* INTERACTIVE DELIVERY MAP SECTION */}
-      <section className="bg-bege/30 border-t border-b border-bege-dark py-16">
+      <section id="delivery-map-section" className="bg-bege/30 border-t border-b border-bege-dark py-16">
         <div className="mx-auto max-w-7xl px-6">
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3 items-center">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 items-start">
             
             {/* Delivery zone info */}
-            <div className="lg:col-span-1 space-y-4">
+            <div className="lg:col-span-4 space-y-4">
               <span className="rounded-full bg-gold-50 px-2.5 py-0.5 text-[9px] font-semibold text-gold-800 tracking-widest uppercase">
                 {getT('deliveryZones')}
               </span>
@@ -1226,42 +1227,9 @@ export default function App() {
               </div>
             </div>
 
-            {/* Simulated Luxury Interactive Map */}
-            <div className="lg:col-span-2 rounded-2xl border border-stone-200 bg-white p-4 shadow-md h-80 relative overflow-hidden flex flex-col justify-between">
-              <div className="absolute inset-0 bg-[#FCFAF6] flex items-center justify-center opacity-65">
-                {/* Elegant vectors simulating city plan */}
-                <div className="absolute inset-0 bg-[radial-gradient(#D4AF37_1px,transparent_1px)] [background-size:16px_16px] [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_60%,transparent_100%)]"></div>
-              </div>
-
-              {/* Marker pin representations */}
-              <div className="absolute top-1/4 left-1/3 flex flex-col items-center">
-                <span className="animate-bounce bg-gold-600 text-white rounded-full p-1.5 shadow-lg"><MapPin size={14} /></span>
-                <span className="bg-espresso text-white px-2 py-0.5 rounded-lg text-[9px] font-semibold shadow-md tracking-widest uppercase border border-gold-500/20 mt-1">Alfama</span>
-              </div>
-
-              <div className="absolute top-1/2 left-2/3 flex flex-col items-center">
-                <span className="animate-bounce bg-gold-600 text-white rounded-full p-1.5 shadow-lg"><MapPin size={14} /></span>
-                <span className="bg-espresso text-white px-2 py-0.5 rounded-lg text-[9px] font-semibold shadow-md tracking-widest uppercase border border-gold-500/20 mt-1">Graça</span>
-              </div>
-
-              <div className="absolute bottom-1/4 left-1/2 flex flex-col items-center">
-                <span className="animate-bounce bg-gold-600 text-white rounded-full p-1.5 shadow-lg"><MapPin size={14} /></span>
-                <span className="bg-espresso text-white px-2 py-0.5 rounded-lg text-[9px] font-semibold shadow-md tracking-widest uppercase border border-gold-500/20 mt-1">Arroios</span>
-              </div>
-
-              <div className="z-10 bg-white/95 rounded-xl border border-stone-100 p-4 w-72 shadow-lg backdrop-blur-sm self-start">
-                <h4 className="text-xs font-semibold text-stone-900 flex items-center gap-1.5">
-                  <Star size={13} className="text-gold-500 fill-gold-500" />
-                  <span>Raio de Entrega Silencioso</span>
-                </h4>
-                <p className="text-[10px] text-stone-500 mt-1 leading-relaxed">
-                  Os nossos estafetas elétricos silenciosos garantem entregas discretas nos principais alojamentos e hotéis boutique de Lisboa.
-                </p>
-              </div>
-
-              <div className="z-10 font-mono text-[9px] text-stone-400 self-end">
-                Latitude/Longitude: 38.7223° N, 9.1393° W • Lisboa, Portugal
-              </div>
+            {/* Interactive Live Google / Schematic Map */}
+            <div className="lg:col-span-8 w-full">
+              <DeliveryMap currentLanguage={lang} />
             </div>
 
           </div>

@@ -141,8 +141,8 @@ export default function ReserveCheckout({
     if (prefix.length >= 4 && !isMatched) {
       setZipWarning(
         currentLanguage === 'pt' 
-          ? 'Nota: Este código postal pode estar fora das nossas áreas de entrega exclusivas em Lisboa Centro.'
-          : 'Note: This postal code may be outside our exclusive Lisbon delivery zones.'
+          ? 'Lamentamos, mas de momento não fazemos entregas neste código postal. Entregamos apenas nas seguintes áreas: Penha de França, Graça, São Vicente, Alfama, Santa Clara, Arroios e Santa Apolónia.'
+          : 'We are sorry, but we currently do not deliver to this postal code. We only deliver to: Penha de França, Graça, São Vicente, Alfama, Santa Clara, Arroios, and Santa Apolónia.'
       );
     } else {
       setZipWarning('');
@@ -631,6 +631,18 @@ export default function ReserveCheckout({
                         onChange={(e) => handleZipChange(e.target.value)}
                         className="mt-1.5 w-full rounded-xl border border-stone-200 bg-stone-50/50 py-2.5 px-3.5 text-xs text-stone-800 focus:border-gold-500 focus:bg-white focus:outline-none focus:ring-1 focus:ring-gold-500"
                       />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const mapEl = document.getElementById('delivery-map-section');
+                          if (mapEl) {
+                            mapEl.scrollIntoView({ behavior: 'smooth' });
+                          }
+                        }}
+                        className="text-[10px] text-gold-600 underline hover:text-gold-800 text-left mt-1.5 inline-block font-semibold cursor-pointer"
+                      >
+                        {currentLanguage === 'pt' ? 'Ver Mapa de Áreas de Entrega' : 'View Delivery Areas Map'}
+                      </button>
                     </div>
                   </div>
 
@@ -666,7 +678,7 @@ export default function ReserveCheckout({
                     <button
                       id="checkout-continue-btn"
                       type="button"
-                      disabled={!date || !time || !address || !postalCode || !accommodationName || !guestName.trim() || !guestEmail.trim() || !guestEmail.includes('@')}
+                      disabled={!date || !time || !address || !postalCode || !accommodationName || !guestName.trim() || !guestEmail.trim() || !guestEmail.includes('@') || !!zipWarning}
                       onClick={() => setStep(2)}
                       className="w-full rounded-xl bg-espresso py-3 text-xs font-semibold text-white hover:bg-gold-700 disabled:bg-stone-100 disabled:text-stone-300 transition-colors focus:outline-none cursor-pointer"
                     >
