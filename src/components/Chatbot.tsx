@@ -67,16 +67,47 @@ export default function Chatbot({ currentLanguage }: ChatbotProps) {
       const data = await response.json();
       setMessages((prev) => [...prev, { role: 'model', text: data.text }]);
     } catch (error) {
-      console.error('Error sending message:', error);
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'model',
-          text: currentLanguage === 'pt' 
-            ? 'Pedimos desculpa, mas ocorreu um erro ao contactar o nosso serviço de concierge. Por favor, tente novamente.'
-            : 'We apologize, but an error occurred while contacting our concierge service. Please try again.'
+      console.warn('Error sending message to server, using local chatbot engine:', error);
+      
+      const query = userText.toLowerCase();
+      let reply = '';
+
+      if (currentLanguage === 'pt') {
+        if (query.includes('menu') || query.includes('cardapio') || query.includes('comer') || query.includes('pequeno-almoço') || query.includes('pequeno-almoco') || query.includes('prato') || query.includes('opcao') || query.includes('opção')) {
+          reply = 'Temos 4 Menus artesanais maravilhosos para si:\n\n1. **Menu Vitamina C** (10.90€): Sumos frescos, torta de laranja fofa e quiche.\n2. **Menu Português** (9.90€): Presunto ibérico, pastel de nata crocante e pastel de bacalhau.\n3. **Menu Brunch** (15.90€): Ovos mexidos com farinheira, rissóis e tarte caseira.\n4. **Cardápio de Verão** (10.90€): Queijo fresco tradicional, torrada com atum e tarte de limão.\n\nLembre-se que também pode adicionar extras deliciosos!';
+        } else if (query.includes('zona') || query.includes('onde') || query.includes('entrega') || query.includes('bairro') || query.includes('rua') || query.includes('codigo') || query.includes('código')) {
+          reply = 'Entregamos em vários bairros históricos selecionados de Lisboa: **Alfama, Graça, Arroios, Penha de França, São Vicente, Santa Clara e Santa Apolónia**. Nós validamos o seu código postal automaticamente durante a reserva para garantir total conformidade!';
+        } else if (query.includes('hora') || query.includes('horario') || query.includes('horário') || query.includes('quando') || query.includes('amanha') || query.includes('amanhã')) {
+          reply = 'As entregas são feitas todas as manhãs entre as **08:30 e as 13:30**, no horário exato que escolher! Muito importante: lembre-se de fazer o seu pedido até às **23:00** do dia anterior para garantirmos a frescura total.';
+        } else if (query.includes('silencio') || query.includes('silenciosa') || query.includes('bater') || query.includes('campainha') || query.includes('porta')) {
+          reply = 'Sim! Respeitamos imenso o seu descanso. Os nossos estafetas são profissionais e treinados para realizar **entregas silenciosas** à porta do seu quarto ou apartamento sem fazer barulho ou tocar a campainha, seguindo as suas indicações.';
+        } else if (query.includes('pagamento') || query.includes('pagar') || query.includes('mbway') || query.includes('cartao') || query.includes('cartão') || query.includes('stripe')) {
+          reply = 'Aceitamos vários métodos seguros de pagamento de luxo: **MB WAY, Multibanco, Cartão de Crédito (via Stripe) e PayPal** diretamente no nosso checkout.';
+        } else if (query.includes('ola') || query.includes('olá') || query.includes('bom dia') || query.includes('boa tarde')) {
+          reply = 'Olá! É um prazer falar consigo. Sou o seu concierge pessoal do Café da manhã na cama LX. Como posso ajudar a planear o seu pequeno-almoço gourmet de sonho em Lisboa amanhã?';
+        } else {
+          reply = 'Compreendo perfeitamente! Como seu concierge pessoal, garanto-lhe que todos os nossos pequenos-almoços são preparados artesanalmente com ingredientes locais frescos do Algarve e entregues com a máxima privacidade nos bairros históricos de Lisboa. Gostaria de saber mais sobre os nossos Menus, Áreas de Entrega, ou as nossas Entregas Silenciosas?';
         }
-      ]);
+      } else {
+        // English fallback
+        if (query.includes('menu') || query.includes('food') || query.includes('breakfast') || query.includes('eat') || query.includes('option') || query.includes('dish')) {
+          reply = 'We have 4 exquisite hand-crafted menus:\n\n1. **Vitamin C Menu** (10.90€): Fresh orange juice, orange roll cake, wild mushroom quiche.\n2. **Portuguese Menu** (9.90€): Black pork presunto ham, crispy pastel de nata, pastel de bacalhau.\n3. **Brunch Menu** (15.90€): Scrambled eggs with farinheira, savory rissóis, warm apple pie.\n4. **Summer Menu** (10.90€): Soft fresh cheese, rustic tuna toast, lemon tart.\n\nFeel free to append delicious Extras to your order!';
+        } else if (query.includes('zone') || query.includes('where') || query.includes('delivery') || query.includes('deliver') || query.includes('neighborhood') || query.includes('place') || query.includes('street')) {
+          reply = 'We deliver straight to your door in premium historic Lisbon neighborhoods: **Alfama, Graça, Arroios, Penha de França, São Vicente, Santa Clara, and Santa Apolónia**. The checkout form will instantly validate your postal code!';
+        } else if (query.includes('hour') || query.includes('time') || query.includes('when') || query.includes('schedule') || query.includes('deadline')) {
+          reply = 'We deliver fresh every single morning between **08:30 AM and 01:30 PM** at your preferred slot! Please note that next-day orders must be finalized by **11:00 PM** the previous evening to secure the finest ingredients.';
+        } else if (query.includes('silent') || query.includes('quiet') || query.includes('bell') || query.includes('door') || query.includes('knock')) {
+          reply = 'Absolutely! We cherish your beauty sleep. Our highly professional couriers are trained to perform **silent deliveries** directly at your door or apartment room without ringing bells, respecting your precise wishes.';
+        } else if (query.includes('payment') || query.includes('pay') || query.includes('card') || query.includes('paypal') || query.includes('mbway')) {
+          reply = 'We support several elegant and highly secure payment options at checkout, including **MB WAY, Multibanco, Credit Cards (processed via Stripe), and PayPal** .';
+        } else if (query.includes('hello') || query.includes('hi') || query.includes('good morning')) {
+          reply = 'Hello! It is a true pleasure to assist you. I am your personal concierge at Breakfast in Bed LX. How can I help curate your dream gourmet morning in Lisbon tomorrow?';
+        } else {
+          reply = 'I completely understand! As your personal concierge, I assure you that our luxury breakfasts are hand-cooked using local organic ingredients and delivered with utmost discretion across Lisbon’s historic core. Would you like to know more about our Menus, Delivery Zones, or Silent Delivery practices?';
+        }
+      }
+
+      setMessages((prev) => [...prev, { role: 'model', text: reply }]);
     } finally {
       setIsLoading(false);
     }

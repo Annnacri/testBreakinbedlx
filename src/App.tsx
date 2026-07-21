@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 
 import { Product, CartItem, Coupon, Order, ClientProfile, ReservationDetails, Review } from './types';
-import { LANGUAGES, TRANSLATIONS, FAQS, DELIVERY_ZONES } from './data';
+import { LANGUAGES, TRANSLATIONS, FAQS, DELIVERY_ZONES, PRODUCTS } from './data';
 
 import ProductModal from './components/ProductModal';
 import ReserveCheckout from './components/ReserveCheckout';
@@ -220,8 +220,9 @@ export default function App() {
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [rulesPopover, setRulesPopover] = useState(false);
 
-  // Load Initial API Data
+  // Load Initial API Data with client-side localStorage fallback for Cloudflare deployments
   const fetchApiData = async () => {
+    let apiSuccess = false;
     try {
       const [resProd, resOrd, resCli, resCoup, resRev] = await Promise.all([
         fetch('/api/products'),
@@ -231,13 +232,123 @@ export default function App() {
         fetch('/api/reviews')
       ]);
 
-      if (resProd.ok) setProducts(await resProd.json());
-      if (resOrd.ok) setOrders(await resOrd.json());
-      if (resCli.ok) setClients(await resCli.json());
-      if (resCoup.ok) setCoupons(await resCoup.json());
-      if (resRev.ok) setReviews(await resRev.json());
+      if (resProd.ok && resOrd.ok && resCli.ok && resCoup.ok && resRev.ok) {
+        setProducts(await resProd.json());
+        setOrders(await resOrd.json());
+        setClients(await resCli.json());
+        setCoupons(await resCoup.json());
+        setReviews(await resRev.json());
+        apiSuccess = true;
+      }
     } catch (e) {
-      console.error("Failed to load API data, falling back to local simulation", e);
+      console.warn("API endpoints not reachable, falling back to local simulation mode:", e);
+    }
+
+    if (!apiSuccess) {
+      // Load products
+      const localProducts = localStorage.getItem('lx_products_db');
+      if (localProducts) {
+        setProducts(JSON.parse(localProducts));
+      } else {
+        setProducts(PRODUCTS);
+        localStorage.setItem('lx_products_db', JSON.stringify(PRODUCTS));
+      }
+
+      // Load coupons
+      const localCoupons = localStorage.getItem('lx_coupons_db');
+      if (localCoupons) {
+        setCoupons(JSON.parse(localCoupons));
+      } else {
+        const DEFAULT_COUPONS = [
+          { code: 'EARLYBIRD', discountType: 'percentage', value: 10, minSpend: 15 },
+          { code: '5PLUS1', discountType: 'fixed', value: 10, minSpend: 50 },
+          { code: 'LUXURY', discountType: 'percentage', value: 15 }
+        ];
+        setCoupons(DEFAULT_COUPONS);
+        localStorage.setItem('lx_coupons_db', JSON.stringify(DEFAULT_COUPONS));
+      }
+
+      // Load orders
+      const localOrders = localStorage.getItem('lx_orders_db');
+      if (localOrders) {
+        setOrders(JSON.parse(localOrders));
+      } else {
+        const DEFAULT_ORDERS = [
+          {
+            id: 'ord-817263',
+            items: [{ productId: 'menu-vitamin-c', name: 'Menu Vitamina C', quantity: 2, price: 10.90 }],
+            reservation: {
+              date: '2026-07-20',
+              time: '08:30',
+              address: 'Graça, Rua do Sol nº 12',
+              postalCode: '1170-025',
+              type: 'hotel',
+              accommodationName: 'Albergaria Senhora do Monte',
+              roomNumber: '104',
+              notes: 'Por favor, entrega silenciosa à porta'
+            },
+            deliveryFee: 3.90,
+            subtotal: 21.80,
+            discount: 0,
+            total: 25.70,
+            status: 'pending',
+            createdAt: new Date().toISOString(),
+            clientEmail: 'anaestevesac@gmail.com',
+            paymentMethod: 'mbway'
+          }
+        ];
+        setOrders(DEFAULT_ORDERS);
+        localStorage.setItem('lx_orders_db', JSON.stringify(DEFAULT_ORDERS));
+      }
+
+      // Load clients
+      const localClients = localStorage.getItem('lx_clients_db');
+      if (localClients) {
+        setClients(JSON.parse(localClients));
+      } else {
+        const DEFAULT_CLIENTS = [
+          {
+            email: 'anaestevesac@gmail.com',
+            name: 'Ana Esteves',
+            phone: '+351 964 423 221',
+            address: 'Penha de França, Rua da Penha',
+            postalCode: '1170-120',
+            accommodationName: 'Apartamento Turístico Penha',
+            favorites: ['menu-vitamin-c', 'extra-pastel-nata']
+          }
+        ];
+        setClients(DEFAULT_CLIENTS);
+        localStorage.setItem('lx_clients_db', JSON.stringify(DEFAULT_CLIENTS));
+      }
+
+      // Load reviews
+      const localReviews = localStorage.getItem('lx_reviews_db');
+      if (localReviews) {
+        setReviews(JSON.parse(localReviews));
+      } else {
+        const DEFAULT_REVIEWS = [
+          {
+            id: 'rev-1',
+            productId: 'menu-vitamin-c',
+            clientEmail: 'anaestevesac@gmail.com',
+            clientName: 'Ana Esteves',
+            rating: 5,
+            text: 'O sumo de laranja é divinal e a torta de laranja é super fofa! Adorei tudo.',
+            createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+          },
+          {
+            id: 'rev-2',
+            productId: 'menu-portuguese',
+            clientEmail: 'tourist-lisbon@example.com',
+            clientName: 'John Doe',
+            rating: 4,
+            text: 'Traditional and yummy. The pastel de nata was still crispy when it arrived!',
+            createdAt: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
+          }
+        ];
+        setReviews(DEFAULT_REVIEWS);
+        localStorage.setItem('lx_reviews_db', JSON.stringify(DEFAULT_REVIEWS));
+      }
     }
   };
 
@@ -265,8 +376,41 @@ export default function App() {
         return { success: false, error: data.error };
       }
     } catch (e) {
-      console.error("Failed to add review", e);
-      return { success: false, error: lang === 'pt' ? 'Ocorreu um erro ao enviar a avaliação.' : 'An error occurred while submitting the review.' };
+      console.warn("Failed to add review on backend, performing local save", e);
+      const localOrders = JSON.parse(localStorage.getItem('lx_orders_db') || '[]');
+      const userHasOrdered = localOrders.some((order: any) => 
+        order.clientEmail.toLowerCase() === currentClient.email.toLowerCase() &&
+        order.items.some((item: any) => item.productId === productId)
+      );
+
+      if (!userHasOrdered) {
+        return {
+          success: false,
+          error: lang === 'pt' 
+            ? "Para avaliar este produto, é necessário que já o tenha encomendado anteriormente." 
+            : "To review this product, you must have ordered it previously."
+        };
+      }
+
+      const localReviews = JSON.parse(localStorage.getItem('lx_reviews_db') || '[]');
+      const filteredReviews = localReviews.filter((r: any) => 
+        !(r.productId === productId && r.clientEmail.toLowerCase() === currentClient.email.toLowerCase())
+      );
+
+      const newReview = {
+        id: `rev-${Date.now()}`,
+        productId,
+        clientEmail: currentClient.email.toLowerCase(),
+        clientName: currentClient.name,
+        rating: Number(rating),
+        text: text.trim().slice(0, 500),
+        createdAt: new Date().toISOString()
+      };
+
+      const updated = [...filteredReviews, newReview];
+      localStorage.setItem('lx_reviews_db', JSON.stringify(updated));
+      setReviews(updated);
+      return { success: true };
     }
   };
 
@@ -382,16 +526,18 @@ export default function App() {
     e.preventDefault();
     if (!loginEmail) return;
 
+    const clientData = {
+      email: loginEmail,
+      name: loginName,
+      phone: loginPhone,
+      favorites: wishlist
+    };
+
     try {
       const response = await fetch('/api/clients', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: loginEmail,
-          name: loginName,
-          phone: loginPhone,
-          favorites: wishlist
-        }),
+        body: JSON.stringify(clientData),
       });
 
       if (response.ok) {
@@ -399,9 +545,33 @@ export default function App() {
         setCurrentClient(profile);
         localStorage.setItem('lx_client', JSON.stringify(profile));
         setShowClientModal(false);
+      } else {
+        throw new Error('Server registration failed');
       }
     } catch (err) {
-      console.error(err);
+      console.warn("Client submit server error, running local authentication", err);
+      const localClients = JSON.parse(localStorage.getItem('lx_clients_db') || '[]');
+      let client = localClients.find((c: any) => c.email.toLowerCase() === loginEmail.toLowerCase());
+
+      if (!client) {
+        client = {
+          email: loginEmail.toLowerCase(),
+          name: loginName || loginEmail.split('@')[0],
+          phone: loginPhone || '',
+          favorites: wishlist
+        };
+        localClients.push(client);
+      } else {
+        if (loginName) client.name = loginName;
+        if (loginPhone) client.phone = loginPhone;
+        client.favorites = wishlist;
+      }
+
+      localStorage.setItem('lx_clients_db', JSON.stringify(localClients));
+      setClients(localClients);
+      setCurrentClient(client);
+      localStorage.setItem('lx_client', JSON.stringify(client));
+      setShowClientModal(false);
     }
   };
 
@@ -720,26 +890,27 @@ export default function App() {
   // Complete Checkout Handler
   const handleCompleteCheckout = async (reservation: ReservationDetails, paymentMethod: string, guestEmail?: string) => {
     const emailToUse = guestEmail || currentClient?.email || 'anon-tourist@breakfastinbedlx.com';
-    
+    const orderData = {
+      items: cart.map(item => ({
+        productId: item.product.id,
+        name: item.product.name[lang] || item.product.name['pt'],
+        quantity: item.quantity,
+        price: item.product.price
+      })),
+      reservation,
+      deliveryFee: 3.90,
+      subtotal,
+      discount,
+      total,
+      clientEmail: emailToUse,
+      paymentMethod
+    };
+
     try {
       const response = await fetch('/api/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items: cart.map(item => ({
-            productId: item.product.id,
-            name: item.product.name[lang] || item.product.name['pt'],
-            quantity: item.quantity,
-            price: item.product.price
-          })),
-          reservation,
-          deliveryFee: 3.90,
-          subtotal,
-          discount,
-          total,
-          clientEmail: emailToUse,
-          paymentMethod
-        })
+        body: JSON.stringify(orderData)
       });
 
       if (response.ok) {
@@ -751,79 +922,144 @@ export default function App() {
         throw new Error('Failed to save order');
       }
     } catch (e) {
-      console.error("Failed to complete checkout", e);
-      throw e;
+      console.warn("Failed to complete checkout on server, running local checkout", e);
+      const localOrders = JSON.parse(localStorage.getItem('lx_orders_db') || '[]');
+      const newOrder = {
+        id: `ord-${Math.floor(100000 + Math.random() * 900000)}`,
+        createdAt: new Date().toISOString(),
+        status: 'pending' as const,
+        ...orderData
+      };
+      const updatedOrders = [newOrder, ...localOrders];
+      localStorage.setItem('lx_orders_db', JSON.stringify(updatedOrders));
+      setOrders(updatedOrders);
+
+      // Clear cart
+      saveCart([]);
+      setAppliedCoupon(null);
     }
   };
 
   // Admin Backoffice Handlers
   const handleUpdateOrderStatus = async (orderId: string, status: Order['status']) => {
     try {
-      await fetch(`/api/orders/${orderId}/status`, {
+      const response = await fetch(`/api/orders/${orderId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status })
       });
-      fetchApiData();
+      if (response.ok) {
+        fetchApiData();
+        return;
+      }
+      throw new Error('Status update failed');
     } catch (e) {
-      console.error(e);
+      console.warn("Order status update server error, running local update", e);
+      const localOrders = JSON.parse(localStorage.getItem('lx_orders_db') || '[]');
+      const updated = localOrders.map((o: any) => o.id === orderId ? { ...o, status } : o);
+      localStorage.setItem('lx_orders_db', JSON.stringify(updated));
+      setOrders(updated);
     }
   };
 
   const handleUpdateProductStock = async (productId: string, popular: boolean) => {
     try {
-      await fetch(`/api/products/${productId}/stock`, {
+      const response = await fetch(`/api/products/${productId}/stock`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ popular })
       });
-      fetchApiData();
+      if (response.ok) {
+        fetchApiData();
+        return;
+      }
+      throw new Error('Stock update failed');
     } catch (e) {
-      console.error(e);
+      console.warn("Product stock update server error, running local update", e);
+      const localProducts = JSON.parse(localStorage.getItem('lx_products_db') || '[]');
+      const updated = localProducts.map((p: any) => p.id === productId ? { ...p, popular } : p);
+      localStorage.setItem('lx_products_db', JSON.stringify(updated));
+      setProducts(updated);
     }
   };
 
   const handleDeleteProduct = async (productId: string) => {
     try {
-      await fetch(`/api/products/${productId}`, { method: 'DELETE' });
-      fetchApiData();
+      const response = await fetch(`/api/products/${productId}`, { method: 'DELETE' });
+      if (response.ok) {
+        fetchApiData();
+        return;
+      }
+      throw new Error('Delete failed');
     } catch (e) {
-      console.error(e);
+      console.warn("Product delete server error, running local delete", e);
+      const localProducts = JSON.parse(localStorage.getItem('lx_products_db') || '[]');
+      const updated = localProducts.filter((p: any) => p.id !== productId);
+      localStorage.setItem('lx_products_db', JSON.stringify(updated));
+      setProducts(updated);
     }
   };
 
   const handleAddProduct = async (prod: Omit<Product, 'id'>) => {
     try {
-      await fetch('/api/products', {
+      const response = await fetch('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(prod)
       });
-      fetchApiData();
+      if (response.ok) {
+        fetchApiData();
+        return;
+      }
+      throw new Error('Add failed');
     } catch (e) {
-      console.error(e);
+      console.warn("Product add server error, running local add", e);
+      const localProducts = JSON.parse(localStorage.getItem('lx_products_db') || '[]');
+      const newProduct = {
+        id: `custom-${Date.now()}`,
+        ...prod
+      };
+      const updated = [...localProducts, newProduct];
+      localStorage.setItem('lx_products_db', JSON.stringify(updated));
+      setProducts(updated);
     }
   };
 
   const handleAddCoupon = async (coup: Coupon) => {
     try {
-      await fetch('/api/coupons', {
+      const response = await fetch('/api/coupons', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(coup)
       });
-      fetchApiData();
+      if (response.ok) {
+        fetchApiData();
+        return;
+      }
+      throw new Error('Add coupon failed');
     } catch (e) {
-      console.error(e);
+      console.warn("Coupon add server error, running local add", e);
+      const localCoupons = JSON.parse(localStorage.getItem('lx_coupons_db') || '[]');
+      const updated = [...localCoupons, coup];
+      localStorage.setItem('lx_coupons_db', JSON.stringify(updated));
+      setCoupons(updated);
     }
   };
 
   const handleDeleteCoupon = async (code: string) => {
     try {
-      await fetch(`/api/coupons/${code}`, { method: 'DELETE' });
-      fetchApiData();
+      const response = await fetch(`/api/coupons/${code}`, { method: 'DELETE' });
+      if (response.ok) {
+        fetchApiData();
+        return;
+      }
+      throw new Error('Delete failed');
     } catch (e) {
-      console.error(e);
+      console.warn("Coupon delete server error, running local delete", e);
+      const localCoupons = JSON.parse(localStorage.getItem('lx_coupons_db') || '[]');
+      const updated = localCoupons.filter((c: any) => c.code.toUpperCase() !== code.toUpperCase());
+      localStorage.setItem('lx_coupons_db', JSON.stringify(updated));
+      setCoupons(updated);
     }
   };
 
