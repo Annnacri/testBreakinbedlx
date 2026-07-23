@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   ShoppingBag, Heart, Search, Menu, X, ArrowRight, CheckCircle, 
   MapPin, Clock, Phone, Mail, Award, Sparkles, Sliders, ChevronRight, 
-  User, ShieldCheck, HeartCrack, HelpCircle, Star, Printer
+  User, ShieldCheck, HeartCrack, HelpCircle, Star, Printer, QrCode
 } from 'lucide-react';
 
 import { Product, CartItem, Coupon, Order, ClientProfile, ReservationDetails, Review } from './types';
@@ -14,6 +14,7 @@ import ReserveCheckout from './components/ReserveCheckout';
 import AdminPanel from './components/AdminPanel';
 import Chatbot from './components/Chatbot';
 import DeliveryMap from './components/DeliveryMap';
+import QRCodeModal from './components/QRCodeModal';
 import brandLogo from './assets/images/brand_logo_brunch_1784813575319.jpg';
 
 const receiptTranslations: { [key: string]: { [lang: string]: string } } = {
@@ -210,6 +211,7 @@ export default function App() {
   const [showCheckout, setShowCheckout] = useState(false);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showClientModal, setShowClientModal] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
   
   // Client Authentication Session state
   const [currentClient, setCurrentClient] = useState<ClientProfile | null>(null);
@@ -1155,9 +1157,20 @@ export default function App() {
             </div>
           </div>
 
-          {/* Controls: Lang Selector, Profile, Cart, Backoffice Trigger */}
-          <div className="flex items-center gap-4">
+          {/* Controls: Lang Selector, QR Code, Profile, Cart, Backoffice Trigger */}
+          <div className="flex items-center gap-2 sm:gap-3">
             
+            {/* QR Code Button */}
+            <button 
+              id="qr-code-toggle-btn"
+              onClick={() => setShowQrModal(true)}
+              className="flex items-center gap-1.5 rounded-full border border-gold-300/80 bg-gold-50/80 px-3 py-1.5 text-xs font-semibold text-gold-950 hover:bg-gold-100 hover:border-gold-400 transition-all focus:outline-none shadow-sm"
+              title="Gerar / Baixar QR Code do Site"
+            >
+              <QrCode size={14} className="text-gold-700" />
+              <span className="hidden sm:inline">QR Code</span>
+            </button>
+
             {/* Language Dropdown Selector */}
             <div className="relative group">
               <button 
@@ -1509,17 +1522,27 @@ export default function App() {
         <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8 space-y-10">
           
           {/* Footer Logo Banner */}
-          <div className="flex items-center gap-4 pb-6 border-b border-stone-800/80">
-            <img 
-              src={brandLogo} 
-              alt="BRUNCH BREAKFAST WELCOME Logo" 
-              className="h-16 w-auto object-contain rounded-2xl bg-white/95 p-1.5 shadow-md border border-gold-500/30" 
-              referrerPolicy="no-referrer"
-            />
-            <div>
-              <h2 className="font-serif text-lg font-bold text-stone-100 tracking-tight">BRUNCH BREAKFAST WELCOME</h2>
-              <p className="text-xs text-gold-400 font-sans font-medium">Café da Manhã na Cama • Lisboa Gourmet Delivery</p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-stone-800/80">
+            <div className="flex items-center gap-4">
+              <img 
+                src={brandLogo} 
+                alt="BRUNCH BREAKFAST WELCOME Logo" 
+                className="h-16 w-auto object-contain rounded-2xl bg-white/95 p-1.5 shadow-md border border-gold-500/30" 
+                referrerPolicy="no-referrer"
+              />
+              <div>
+                <h2 className="font-serif text-lg font-bold text-stone-100 tracking-tight">BRUNCH BREAKFAST WELCOME</h2>
+                <p className="text-xs text-gold-400 font-sans font-medium">Café da Manhã na Cama • Lisboa Gourmet Delivery</p>
+              </div>
             </div>
+
+            <button
+              onClick={() => setShowQrModal(true)}
+              className="flex items-center gap-2 self-start sm:self-auto rounded-xl bg-stone-900 border border-gold-500/40 px-4 py-2 text-xs font-semibold text-gold-300 hover:bg-gold-500/10 hover:border-gold-400 transition-all shadow-sm"
+            >
+              <QrCode size={16} className="text-gold-400" />
+              <span>Ver & Baixar QR Code</span>
+            </button>
           </div>
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
@@ -1879,6 +1902,13 @@ export default function App() {
           />
         )}
       </AnimatePresence>
+
+      {/* OVERLAY: QR CODE GENERATOR & DOWNLOAD MODAL */}
+      <QRCodeModal
+        isOpen={showQrModal}
+        onClose={() => setShowQrModal(false)}
+        brandLogoUrl={brandLogo}
+      />
 
     </div>
   );
