@@ -16,6 +16,7 @@ import Chatbot from './components/Chatbot';
 import DeliveryMap from './components/DeliveryMap';
 import QRCodeModal from './components/QRCodeModal';
 import brandLogo from './assets/images/brand_logo_brunch_1784813575319.jpg';
+import heroBg from './assets/images/hero_breakfast_bed_1784378700762.jpg';
 
 const receiptTranslations: { [key: string]: { [lang: string]: string } } = {
   receiptTitle: {
@@ -248,10 +249,28 @@ export default function App() {
     }
 
     if (!apiSuccess) {
-      // Load products
+      // Load products & update any legacy unbundled image paths
       const localProducts = localStorage.getItem('lx_products_db');
       if (localProducts) {
-        setProducts(JSON.parse(localProducts));
+        try {
+          const parsed: Product[] = JSON.parse(localProducts);
+          const sanitized = parsed.map(p => {
+            const defaultProd = PRODUCTS.find(defP => defP.id === p.id);
+            // Always ensure valid image URL from defaultProd if image is missing, contains unbundled path, or is default
+            if (defaultProd) {
+              return { ...p, image: defaultProd.image };
+            }
+            return {
+              ...p,
+              image: p.image || 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?q=80&w=600&auto=format&fit=crop'
+            };
+          });
+          setProducts(sanitized);
+          localStorage.setItem('lx_products_db', JSON.stringify(sanitized));
+        } catch {
+          setProducts(PRODUCTS);
+          localStorage.setItem('lx_products_db', JSON.stringify(PRODUCTS));
+        }
       } else {
         setProducts(PRODUCTS);
         localStorage.setItem('lx_products_db', JSON.stringify(PRODUCTS));
@@ -1238,7 +1257,7 @@ export default function App() {
       {/* FULL-WIDTH HERO SECTION WITH CUSTOM GENERATED ASSET */}
       <header className="relative overflow-hidden bg-stone-900 py-24 sm:py-32">
         <img
-          src="/src/assets/images/hero_breakfast_bed_1784378700762.jpg"
+          src={heroBg}
           alt="Gourmet Portuguese Breakfast Tray in Bed"
           className="absolute inset-0 h-full w-full object-cover opacity-45"
           referrerPolicy="no-referrer"
@@ -1403,6 +1422,9 @@ export default function App() {
                       alt={localizedName} 
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?q=80&w=600&auto=format&fit=crop';
+                      }}
                     />
                     {prod.featured && (
                       <span className="absolute bottom-3 left-3 rounded-full bg-gold-600 px-2.5 py-0.5 text-[9px] font-semibold text-white tracking-widest uppercase border border-gold-500/10">
@@ -1660,7 +1682,15 @@ export default function App() {
                   <div className="space-y-4">
                     {cart.map((item) => (
                       <div key={item.product.id} className="flex gap-3 items-center justify-between border-b border-stone-100 pb-4">
-                        <img src={item.product.image} alt={item.product.name[lang] || item.product.name['pt']} className="h-12 w-12 rounded-xl object-cover shrink-0" referrerPolicy="no-referrer" />
+                        <img 
+                          src={item.product.image} 
+                          alt={item.product.name[lang] || item.product.name['pt']} 
+                          className="h-12 w-12 rounded-xl object-cover shrink-0" 
+                          referrerPolicy="no-referrer" 
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?q=80&w=600&auto=format&fit=crop';
+                          }}
+                        />
                         <div className="flex-1 min-w-0">
                           <p className="font-sans text-xs font-semibold text-stone-900 truncate">
                             {item.product.name[lang] || item.product.name['pt']}

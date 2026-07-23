@@ -1,4 +1,13 @@
 import { Product } from './types';
+import vitaminaCImg from './assets/images/vitamina_c_menu_1784378715670.jpg';
+import portuguesImg from './assets/images/portugues_menu_1784378730192.jpg';
+import brunchImg from './assets/images/brunch_menu_1784378744904.jpg';
+import summerImg from './assets/images/summer_menu_1784378759146.jpg';
+import bifanaImg from './assets/images/bifana_portuguesa_gourmet_1784382526853.jpg';
+import pregoImg from './assets/images/prego_no_pao_gourmet_1784382300174.jpg';
+import croqueteImg from './assets/images/croquete_de_vitela_gourmet_1784381878100.jpg';
+import rissolLeitaoImg from './assets/images/rissol_de_leitao_gourmet_1784382021885.jpg';
+import pastelBacalhauImg from './assets/images/pastel_de_bacalhau_gourmet_1784382159500.jpg';
 
 export const LANGUAGES = [
   { code: 'pt', name: 'Português', flag: '🇵🇹' },
@@ -217,7 +226,7 @@ export const PRODUCTS: Product[] = [
       de: ['Frisch gepresster Orangensaft', 'Hausgemachter Orangenschneckenkuchen', 'Quiche mit wilden Pilzen', 'Croissants gefüllt mit Hüttenkäse und Kiwi'],
       it: ['Spremuta d’arancia fresca', 'Torta all’arancia fatta in casa', 'Quiche di funghi selvatici', 'Croissant ripieni di ricotta e kiwi'],
     },
-    image: '/src/assets/images/vitamina_c_menu_1784378715670.jpg',
+    image: vitaminaCImg,
     description: {
       pt: 'Uma explosão refrescante de vitalidade e frescura para começar o seu dia em Lisboa. Uma combinação perfeita entre doces cítricos e um toque salgado de cogumelos.',
       en: 'A refreshing burst of vitality and freshness to start your day in Lisbon. A perfect balance of sweet citrus and savory mushroom quiche.',
@@ -274,7 +283,7 @@ export const PRODUCTS: Product[] = [
       de: ['Traditionelle Schokoladenmilch', 'Rustikales Mischbrot mit Premium-Iberico-Schinken', 'Knuspriges Stockfischbällchen (Pastel de Bacalhau)', 'Handgemachtes Pastel de Nata'],
       it: ['Latte al cioccolato tradizionale', 'Pane misto rustico con prosciutto iberico', 'Frittella di baccalà croccante', 'Pastel de nata artigianale'],
     },
-    image: '/src/assets/images/portugues_menu_1784378730192.jpg',
+    image: portuguesImg,
     description: {
       pt: 'A essência da manhã lusitana. Desfrute dos sabores mais emblemáticos de Portugal com ingredientes tradicionais selecionados à mão.',
       en: 'The very essence of a Lusitanian morning. Taste the most iconic flavors of Portugal with hand-selected traditional ingredients.',
@@ -331,7 +340,7 @@ export const PRODUCTS: Product[] = [
       de: ['Frisch gepresster Orangensaft', 'Rührei mit traditioneller Farinheira-Wurst', 'Kleine handgemachte Toasts', 'Knuspriges Krabben-Rissol', 'Bairrada Spanferkel-Rissol', 'Traditionelle portugiesische Sardinenpaste', 'Hausgemachter warmer Apfelkuchen mit Zimt'],
       it: ['Spremuta d’arancia fresca', 'Uova strapazzate con farinheira tradizionale', 'Mini crostini artigianali', 'Rissol di gamberi croccante', 'Rissol di maialino da latte della Bairrada', 'Paté di sarde tradizionale', 'Torta di mele fatta in casa con cannella'],
     },
-    image: '/src/assets/images/brunch_menu_1784378744904.jpg',
+    image: brunchImg,
     description: {
       pt: 'O banquete definitivo. Um brunch completo que combina iguarias fumadas portuguesas e pastelaria artesanal fina. Perfeito para manhãs preguiçosas.',
       en: 'The ultimate feast. A comprehensive brunch combining Portuguese smoked delicacies and fine artisanal pastries. Ideal for lazy, luxurious mornings.',
@@ -388,7 +397,7 @@ export const PRODUCTS: Product[] = [
       de: ['Frische Zitronen-Minz-Limonade', 'Traditioneller frischer portugiesischer Weichkäse', 'Rustikaler Toast mit hausgemachter Thunfischpaste und Gourmet-Salat', 'Leichte und frische Zitronentarte'],
       it: ['Succo di limone fresco e menta', 'Formaggio fresco tradizionale portoghese', 'Toast rustico con crema di tonno artigianale e lattuga gourmet', 'Crostata al limone fresca e leggera'],
     },
-    image: '/src/assets/images/summer_menu_1784378759146.jpg',
+    image: summerImg,
     description: {
       pt: 'Fresco, leve e revigorante. Desenvolvido para os dias quentes de Lisboa, celebrando sabores mediterrânicos leves e sobremesas cítricas que despertam os sentidos.',
       en: 'Fresh, light, and invigorating. Created for hot Lisbon days, celebrating light Mediterranean flavors and citrusy pastries that awaken the senses.',
@@ -438,7 +447,7 @@ export const PRODUCTS: Product[] = [
     category: 'extra',
     price: 4.90,
     contents: { pt: ['Sandes de porco marinado tradicional em pão rústico de água'], en: ['Traditional marinated pork cutlet in a rustic bread roll'], es: ['Sándwich de cerdo marinado tradicional en pan de agua rústico'], fr: ['Sandwich de porc mariné traditionnel dans un pain croustillant'], de: ['Traditionelles mariniertes Schweineschnitzel im rustikalen Brötchen'], it: ['Panino con coppa di maiale marinata tradizionale in pane rustico'] },
-    image: '/src/assets/images/bifana_portuguesa_gourmet_1784382526853.jpg',
+    image: bifanaImg,
     description: {
       pt: 'A lendária sandes de porco portuguesa. Carne de porco macia, marinada com alho, vinho branco e louro, cozinhada lentamente e servida quente num pão rústico com um toque de mostarda.',
       en: 'The legendary Portuguese pork sandwich. Tender pork loin marinated in white wine, garlic, and bay leaves, slow-cooked and served warm in a crusty roll with mustard.',
@@ -466,7 +475,7 @@ export const PRODUCTS: Product[] = [
     category: 'extra',
     price: 4.90,
     contents: { pt: ['Bife do lombo de novilho em bolo do caco com manteiga de alho e picles caseiros'], en: ['Tender beef steak in a bolo do caco garlic bread with homemade pickles'], es: ['Bife de lomo de ternera en bolo do caco con mantequilla de ajo y encurtidos'], fr: ['Filet de bœuf tendre dans un pain bolo do caco au beurre d’ail et pickles'], de: ['Zartes Rindersteak im Bolo do Caco Knoblauchbrot mit hausgemachten Pickles'], it: ['Fettina di manzo in pane bolo do caco con burro all’aglio e cetriolini'] },
-    image: '/src/assets/images/prego_no_pao_gourmet_1784382300174.jpg',
+    image: pregoImg,
     description: {
       pt: 'Um clássico das cervejarias portuguesas. Bife de novilho extremamente tenro e sumarento, grelhado com alho e servido em bolo do caco quente com manteiga de ervas e picles crocantes.',
       en: 'A Portuguese tavern classic. Juicy, tender beef steak seared with garlic and served in warm traditional Madeira "Bolo do Caco" sweet potato bread with garlic butter.',
@@ -494,7 +503,7 @@ export const PRODUCTS: Product[] = [
     category: 'extra',
     price: 2.20,
     contents: { pt: ['Um croquete gourmet de vitela desfiada e frito na perfeição'], en: ['One gourmet shredded veal croquette fried to perfection'], es: ['Una croqueta gourmet de ternera desmenuzada crujiente'], fr: ['Une croquette de veau effiloché croustillante'], de: ['Eine Gourmet-Krokette aus gezupftem Kalbfleisch, knusprig frittiert'], it: ['Una crocchetta gourmet di vitello sfilacciato fritta alla perfezione'] },
-    image: '/src/assets/images/croquete_de_vitela_gourmet_1784381878100.jpg',
+    image: croqueteImg,
     description: {
       pt: 'Crocante por fora, divinalmente cremoso por dentro. Elaborado com vitela de primeira qualidade cozinhada lentamente com vinho do Porto e ervas frescas.',
       en: 'Crispy on the outside, incredibly creamy on the inside. Made with premium slow-cooked veal shredded with a touch of Port wine and fresh herbs.',
@@ -522,7 +531,7 @@ export const PRODUCTS: Product[] = [
     category: 'extra',
     price: 3.90,
     contents: { pt: ['Rissol tradicional de massa artesanal recheado com leitão da Bairrada assado'], en: ['Traditional savory pastry filled with roasted Bairrada suckling pig'], es: ['Risol tradicional relleno de cochinillo asado al estilo de Bairrada'], fr: ['Rissolé traditionnel garni de cochon de lait rôti de Bairrada'], de: ['Klassische Teigtasche gefüllt mit gebratenem Bairrada-Spanferkel'], it: ['Rissol tradizionale ripieno di maialino arrosto della Bairrada'] },
-    image: '/src/assets/images/rissol_de_leitao_gourmet_1784382021885.jpg',
+    image: rissolLeitaoImg,
     description: {
       pt: 'Uma iguaria premium. Massa caseira delicada recheada com leitão assado desfiado da Bairrada e um molho cremoso condimentado com pimenta preta.',
       en: 'A premium delicacy. Delicate homemade pastry filled with rich, shredded roasted Bairrada suckling pig and a creamy black pepper sauce.',
@@ -578,7 +587,7 @@ export const PRODUCTS: Product[] = [
     category: 'extra',
     price: 1.90,
     contents: { pt: ['Bolinho tradicional de bacalhau artesanal frito na hora'], en: ['Traditional codfish cake made with Atlantic cod fried golden'], es: ['Bolito de bacalao tradicional frito al momento'], fr: ['Beignet de morue traditionnel doré et croustillant'], de: ['Klassisches Kabeljau-Krokettchen, golden frittiert'], it: ['Frittella tradizionale di baccalà fritto al momento'] },
-    image: '/src/assets/images/pastel_de_bacalhau_gourmet_1784382159500.jpg',
+    image: pastelBacalhauImg,
     description: {
       pt: 'Feito com bacalhau do Atlântico de cura tradicional desfiado, misturado com batatas cozidas, ovos biológicos, cebolas e salsa picada, frito até dourar.',
       en: 'Made with premium salted Atlantic cod, mashed potatoes, organic eggs, finely chopped onions, and fresh parsley, fried until golden and crisp.',

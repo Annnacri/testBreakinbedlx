@@ -117,6 +117,9 @@ export default function ProductModal({
             alt={getName(product)}
             className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
             referrerPolicy="no-referrer"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?q=80&w=600&auto=format&fit=crop';
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-stone-950/30 to-transparent"></div>
           
