@@ -9,7 +9,7 @@ import { Product, Order, ClientProfile, Coupon, Review } from "./src/types";
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.NODE_ENV === "production" ? parseInt(process.env.PORT || "3000", 10) : 3000;
 
 app.use(express.json());
 

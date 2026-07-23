@@ -14,6 +14,7 @@ import ReserveCheckout from './components/ReserveCheckout';
 import AdminPanel from './components/AdminPanel';
 import Chatbot from './components/Chatbot';
 import DeliveryMap from './components/DeliveryMap';
+import brandLogo from './assets/images/brand_logo_brunch_1784813575319.jpg';
 
 const receiptTranslations: { [key: string]: { [lang: string]: string } } = {
   receiptTitle: {
@@ -1137,10 +1138,21 @@ export default function App() {
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
           
           {/* Logo / Title */}
-          <div className="flex items-center gap-1.5 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <span className="font-serif text-lg font-semibold tracking-tight text-espresso">
-              Café da manhã na cama <span className="text-gold-600 font-bold font-sans text-xl">LX</span>
-            </span>
+          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+            <img 
+              src={brandLogo} 
+              alt="BRUNCH BREAKFAST WELCOME - Café da manhã na cama LX" 
+              className="h-11 sm:h-12 w-auto object-contain rounded-xl shadow-sm border border-stone-200/80 group-hover:scale-105 transition-transform" 
+              referrerPolicy="no-referrer"
+            />
+            <div className="flex flex-col">
+              <span className="font-serif text-sm sm:text-base font-bold tracking-tight text-espresso leading-tight">
+                BRUNCH BREAKFAST WELCOME
+              </span>
+              <span className="text-[10px] text-gold-700 font-sans font-semibold tracking-wider uppercase">
+                Café da manhã na cama LX
+              </span>
+            </div>
           </div>
 
           {/* Controls: Lang Selector, Profile, Cart, Backoffice Trigger */}
@@ -1496,6 +1508,20 @@ export default function App() {
       <footer className="bg-stone-950 text-stone-400 border-t border-stone-800">
         <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8 space-y-10">
           
+          {/* Footer Logo Banner */}
+          <div className="flex items-center gap-4 pb-6 border-b border-stone-800/80">
+            <img 
+              src={brandLogo} 
+              alt="BRUNCH BREAKFAST WELCOME Logo" 
+              className="h-16 w-auto object-contain rounded-2xl bg-white/95 p-1.5 shadow-md border border-gold-500/30" 
+              referrerPolicy="no-referrer"
+            />
+            <div>
+              <h2 className="font-serif text-lg font-bold text-stone-100 tracking-tight">BRUNCH BREAKFAST WELCOME</h2>
+              <p className="text-xs text-gold-400 font-sans font-medium">Café da Manhã na Cama • Lisboa Gourmet Delivery</p>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
             {/* Col 1: Contacts */}
             <div className="space-y-3">
