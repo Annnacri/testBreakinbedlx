@@ -13,7 +13,6 @@ import ProductModal from './components/ProductModal';
 import ReserveCheckout from './components/ReserveCheckout';
 import AdminPanel from './components/AdminPanel';
 import Chatbot from './components/Chatbot';
-import DeliveryMap from './components/DeliveryMap';
 import QRCodeModal from './components/QRCodeModal';
 import brandLogo from './assets/images/brand_logo_brunch_1784813575319.jpg';
 import heroBg from './assets/images/hero_breakfast_bed_1784378700762.jpg';
@@ -1155,38 +1154,38 @@ export default function App() {
       </div>
 
       {/* LUXURY NAVBAR */}
-      <nav className="sticky top-0 z-30 border-b border-bege-dark bg-white/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+      <nav className="sticky top-0 z-30 border-b border-bege-dark bg-white/95 backdrop-blur-md">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-3 sm:px-6 py-2.5 sm:py-4 gap-2">
           
           {/* Logo / Title */}
-          <div className="flex items-center gap-3 cursor-pointer group" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+          <div className="flex items-center gap-2 sm:gap-3 cursor-pointer group shrink min-w-0" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <img 
               src={brandLogo} 
               alt="BRUNCH BREAKFAST WELCOME - Café da manhã na cama LX" 
-              className="h-11 sm:h-12 w-auto object-contain rounded-xl shadow-sm border border-stone-200/80 group-hover:scale-105 transition-transform" 
+              className="h-9 sm:h-12 w-auto object-contain rounded-xl shadow-sm border border-stone-200/80 group-hover:scale-105 transition-transform shrink-0" 
               referrerPolicy="no-referrer"
             />
-            <div className="flex flex-col">
-              <span className="font-serif text-sm sm:text-base font-bold tracking-tight text-espresso leading-tight">
+            <div className="flex flex-col min-w-0">
+              <span className="font-serif text-xs sm:text-base font-bold tracking-tight text-espresso leading-tight truncate">
                 BRUNCH BREAKFAST WELCOME
               </span>
-              <span className="text-[10px] text-gold-700 font-sans font-semibold tracking-wider uppercase">
+              <span className="text-[9px] sm:text-[10px] text-gold-700 font-sans font-semibold tracking-wider uppercase truncate hidden min-[380px]:block">
                 Café da manhã na cama LX
               </span>
             </div>
           </div>
 
           {/* Controls: Lang Selector, QR Code, Profile, Cart, Backoffice Trigger */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             
             {/* QR Code Button */}
             <button 
               id="qr-code-toggle-btn"
               onClick={() => setShowQrModal(true)}
-              className="flex items-center gap-1.5 rounded-full border border-gold-300/80 bg-gold-50/80 px-3 py-1.5 text-xs font-semibold text-gold-950 hover:bg-gold-100 hover:border-gold-400 transition-all focus:outline-none shadow-sm"
+              className="flex items-center gap-1.5 rounded-full border border-gold-300/80 bg-gold-50/80 p-2 sm:px-3 sm:py-1.5 text-xs font-semibold text-gold-950 hover:bg-gold-100 hover:border-gold-400 transition-all focus:outline-none shadow-sm"
               title="Gerar / Baixar QR Code do Site"
             >
-              <QrCode size={14} className="text-gold-700" />
+              <QrCode size={14} className="text-gold-700 shrink-0" />
               <span className="hidden sm:inline">QR Code</span>
             </button>
 
@@ -1194,7 +1193,7 @@ export default function App() {
             <div className="relative group">
               <button 
                 id="lang-dropdown-btn"
-                className="flex items-center gap-1.5 rounded-full border border-stone-200 bg-bege px-3.5 py-1.5 text-xs font-medium text-stone-700 hover:border-gold-500 transition-all focus:outline-none"
+                className="flex items-center gap-1 rounded-full border border-stone-200 bg-bege px-2 py-1.5 sm:px-3.5 sm:py-1.5 text-xs font-medium text-stone-700 hover:border-gold-500 transition-all focus:outline-none"
               >
                 <span>{LANGUAGES.find(l => l.code === lang)?.flag}</span>
                 <span className="hidden sm:inline">{LANGUAGES.find(l => l.code === lang)?.name}</span>
@@ -1222,18 +1221,18 @@ export default function App() {
             <button
               id="profile-toggle-btn"
               onClick={() => setShowClientModal(true)}
-              className="rounded-full border border-stone-200 bg-bege p-2.5 text-stone-600 hover:border-gold-500 hover:text-espresso transition-all focus:outline-none"
+              className="rounded-full border border-stone-200 bg-bege p-2 sm:p-2.5 text-stone-600 hover:border-gold-500 hover:text-espresso transition-all focus:outline-none"
             >
-              <User size={15} />
+              <User size={14} />
             </button>
 
             {/* Cart Icon with notification bubble */}
             <button
               id="cart-drawer-toggle"
               onClick={() => setShowCartDrawer(true)}
-              className="relative rounded-full border border-stone-200 bg-bege p-2.5 text-stone-600 hover:border-gold-500 hover:text-espresso transition-all focus:outline-none"
+              className="relative rounded-full border border-stone-200 bg-bege p-2 sm:p-2.5 text-stone-600 hover:border-gold-500 hover:text-espresso transition-all focus:outline-none"
             >
-              <ShoppingBag size={15} />
+              <ShoppingBag size={14} />
               {cart.length > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-gold-600 text-[9px] font-bold text-white shadow-md">
                   {cart.reduce((sum, i) => sum + i.quantity, 0)}
@@ -1245,7 +1244,7 @@ export default function App() {
             <button
               id="admin-portal-trigger"
               onClick={() => setShowAdmin(true)}
-              className="rounded-full border border-stone-200 bg-espresso p-2.5 text-gold-500 hover:bg-espresso-light transition-all focus:outline-none"
+              className="rounded-full border border-stone-200 bg-espresso p-2 sm:p-2.5 text-gold-500 hover:bg-espresso-light transition-all focus:outline-none"
               title="Hospitality Management Backoffice"
             >
               <Sliders size={13} />
@@ -1481,41 +1480,6 @@ export default function App() {
               </div>
             );
           })}
-        </div>
-      </section>
-
-      {/* INTERACTIVE DELIVERY MAP SECTION */}
-      <section id="delivery-map-section" className="bg-bege/30 border-t border-b border-bege-dark py-16">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 items-start">
-            
-            {/* Delivery zone info */}
-            <div className="lg:col-span-4 space-y-4">
-              <span className="rounded-full bg-gold-50 px-2.5 py-0.5 text-[9px] font-semibold text-gold-800 tracking-widest uppercase">
-                {getT('deliveryZones')}
-              </span>
-              <h2 className="font-serif text-2xl font-medium tracking-tight text-espresso">
-                {getT('deliveryZones')}
-              </h2>
-              <p className="text-xs text-stone-500 leading-relaxed">
-                {getT('deliveryZonesSubtitle')}
-              </p>
-              <div className="divide-y divide-stone-200/80 border-t border-stone-200/40">
-                {DELIVERY_ZONES.map((zone) => (
-                  <div key={zone.name} className="flex justify-between items-center py-2.5 text-xs">
-                    <span className="font-medium text-stone-800">{zone.name}</span>
-                    <span className="font-mono text-stone-400">CP: {zone.zipPrefixes.join(', ')}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Interactive Live Google / Schematic Map */}
-            <div className="lg:col-span-8 w-full">
-              <DeliveryMap currentLanguage={lang} />
-            </div>
-
-          </div>
         </div>
       </section>
 

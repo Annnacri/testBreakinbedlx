@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { QRCodeCanvas } from 'qrcode.react';
 import { QrCode, Download, Copy, Check, Printer, Share2, X, ExternalLink, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -17,7 +17,23 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
   const defaultDomain = 'https://breakfasinbedlx.com';
   const [targetUrl, setTargetUrl] = useState<string>(defaultDomain);
   const [copied, setCopied] = useState(false);
+  const [qrSize, setQrSize] = useState<number>(200);
   const qrContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 380) {
+        setQrSize(160);
+      } else if (window.innerWidth < 640) {
+        setQrSize(180);
+      } else {
+        setQrSize(210);
+      }
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(targetUrl);
@@ -235,25 +251,25 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="relative w-full max-w-md rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-gold-200/60 text-stone-900"
+            className="relative w-full max-w-md rounded-3xl bg-white p-5 sm:p-8 shadow-2xl border border-gold-200/60 text-stone-900 max-h-[92vh] overflow-y-auto"
           >
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="absolute right-4 top-4 rounded-full p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-700 transition-colors"
+              className="absolute right-3.5 top-3.5 rounded-full p-2 text-stone-400 hover:bg-stone-100 hover:text-stone-700 transition-colors z-10"
               aria-label="Fechar"
             >
               <X size={20} />
             </button>
 
             {/* Header Badge & Title */}
-            <div className="text-center space-y-2">
+            <div className="text-center space-y-2 pr-6 sm:pr-0">
               <div className="inline-flex items-center gap-1.5 rounded-full bg-gold-100/80 px-3 py-1 text-xs font-bold text-gold-900 border border-gold-300/50">
                 <QrCode size={14} className="text-gold-700" />
                 <span>QR CODE OFICIAL</span>
               </div>
               
-              <h3 className="font-serif text-2xl font-bold text-espresso">
+              <h3 className="font-serif text-xl sm:text-2xl font-bold text-espresso">
                 Aceder ao Site por QR Code
               </h3>
               
@@ -263,14 +279,14 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
             </div>
 
             {/* QR Code Canvas Frame */}
-            <div className="mt-6 flex flex-col items-center justify-center">
+            <div className="mt-5 sm:mt-6 flex flex-col items-center justify-center">
               <div
                 ref={qrContainerRef}
-                className="relative flex flex-col items-center justify-center rounded-2xl bg-gradient-to-b from-amber-50/50 to-stone-50 p-6 border border-gold-200 shadow-inner group"
+                className="relative flex flex-col items-center justify-center rounded-2xl bg-gradient-to-b from-amber-50/50 to-stone-50 p-4 sm:p-6 border border-gold-200 shadow-inner group w-full max-w-[280px] sm:max-w-none"
               >
                 <QRCodeCanvas
                   value={targetUrl}
-                  size={220}
+                  size={qrSize}
                   bgColor="#FFFFFF"
                   fgColor="#2C1D11"
                   level="H"
@@ -281,8 +297,8 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
                           src: brandLogoUrl,
                           x: undefined,
                           y: undefined,
-                          height: 48,
-                          width: 48,
+                          height: Math.round(qrSize * 0.18),
+                          width: Math.round(qrSize * 0.18),
                           excavate: true,
                         }
                       : undefined
@@ -290,9 +306,9 @@ export const QRCodeModal: React.FC<QRCodeModalProps> = ({
                 />
 
                 {/* Subtitle inside card */}
-                <div className="mt-3 flex items-center gap-1.5 text-[11px] font-semibold text-gold-800">
-                  <Sparkles size={12} className="text-gold-600" />
-                  <span>breakfasinbedlx.com</span>
+                <div className="mt-3 flex items-center justify-center gap-1.5 text-[11px] font-semibold text-gold-800 text-center w-full truncate">
+                  <Sparkles size={12} className="text-gold-600 shrink-0" />
+                  <span className="truncate">breakfasinbedlx.com</span>
                 </div>
               </div>
             </div>
